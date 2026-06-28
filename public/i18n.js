@@ -55,7 +55,7 @@ const T = {
   footer_safe:   { en:"This site is monitored by Jose's family. Stay safe! 💛", es:"Este sitio es monitoreado por la familia de Jose. ¡Mantente seguro! 💛", fr:"Ce site est surveillé par la famille de Jose. Restez en sécurité ! 💛", pt:"Este site é monitorado pela família de Jose. Fique seguro! 💛", yo:"Ẹbi Jose ń ṣọ oju opo yii. Jẹ ki o wa ni aabo! 💛", zh:"此网站由Jose的家人监控。注意安全！💛", ar:"هذا الموقع تراقبه عائلة José. ابق آمناً! 💛" },
 };
 
-let currentLang = localStorage.getItem('poke_lang') || 'es';
+let currentLang = 'es'; // Spanish is the default — always
 
 function t(key) {
   return (T[key] && (T[key][currentLang] || T[key]['en'])) || key;
@@ -80,9 +80,11 @@ function applyLang() {
   // Update agent input placeholder
   const agentInput = document.getElementById('agent-input');
   if (agentInput) agentInput.placeholder = t('agent_ph');
+  // Update greeting bubble directly (panel may be hidden but data-i18n handles it)
+  const greetBubble = document.querySelector('#agent-messages .msg-bubble[data-i18n="agent_greet"]');
+  if (greetBubble) greetBubble.textContent = t('agent_greet');
   // RTL support
   document.body.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
-  localStorage.setItem('poke_lang', currentLang);
 }
 
 function setLang(lang) {
