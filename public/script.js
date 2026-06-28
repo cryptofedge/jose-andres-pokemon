@@ -432,7 +432,7 @@ let agentOpen = false;
 function toggleAgent() {
   agentOpen = !agentOpen;
   document.getElementById('agent-panel').classList.toggle('hidden', !agentOpen);
-  document.getElementById('agent-toggle-icon').textContent = agentOpen ? '✕' : '⚡';
+  document.getElementById('agent-toggle-icon').textContent = agentOpen ? '✕' : '🎓';
   if (agentOpen) {
     setTimeout(() => document.getElementById('agent-input').focus(), 100);
     scrollAgentToBottom();

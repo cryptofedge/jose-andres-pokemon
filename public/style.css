@@ -553,13 +553,11 @@ footer p {
   color: rgba(255,255,255,0.4) !important;
 }
 
-/* ── PIKAFELLITO Agent Widget ─────────────────────────────────────── */
+/* ── Profesor Justin Agent Widget ────────────────────────────────── */
 #agent-widget {
   position: fixed;
   bottom: 24px; right: 24px;
   z-index: 400;
-  display: flex; flex-direction: column; align-items: flex-end;
-  gap: 12px;
 }
 
 #agent-toggle {
@@ -590,16 +588,18 @@ footer p {
   50%       { box-shadow: 0 8px 48px rgba(255,203,5,0.6); }
 }
 
-/* Panel */
+/* Panel — positioned fixed so it never causes layout shift */
 #agent-panel {
-  width: min(360px, 92vw);
+  position: fixed;
+  bottom: 90px; right: 24px;
+  width: min(360px, calc(100vw - 48px));
   background: #1a1a2e;
   border: 2px solid rgba(255,203,5,0.35);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 24px 80px rgba(0,0,0,0.6);
   display: flex; flex-direction: column;
-  max-height: 520px;
+  max-height: min(520px, calc(100dvh - 120px));
 }
 
 .agent-header {
@@ -706,7 +706,13 @@ footer p {
   #agent-widget { bottom: 16px; right: 16px; }
   .agent-label { display: none; }
   #agent-toggle { padding: 14px 18px; }
-  #agent-panel { max-height: 420px; width: calc(100vw - 32px); }
+  #agent-panel {
+    bottom: 80px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-height: min(480px, calc(100dvh - 110px));
+  }
 }
 
 /* ── Animations ─────────────────────────────────────────────────── */
