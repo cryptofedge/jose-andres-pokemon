@@ -133,10 +133,16 @@ async function seedContent() {
   if (postCount === 0) {
     await Post.insertMany([
       { title: 'I got my first Pokemon card pack today!! 🎉', body: "Daddy took me to the store and I got a Scarlet & Violet booster pack. I pulled a CHARIZARD EX!!! It's so shiny and cool. I'm never trading it. Never ever ever. 🔥", createdAt: new Date('2026-06-20T18:30:00Z') },
-      { title: 'My favorite Pokemon is Pikachu ⚡', body: "I love Pikachu because he is Ash's best friend and he never gives up! I want a Pikachu backpack for school. Also Charizard is cool too but Pikachu is my NUMBER ONE. Ask PIKAFELLITO if you want to know more about Pikachu!", createdAt: new Date('2026-06-18T14:00:00Z') },
-      { title: 'We went to Pokemon League at the game store! 🏆', body: "Papi brought me to the Pokemon League event at the card shop on Saturday. There were so many cards everywhere! I watched the big kids battle and it looked SO cool. I want to learn to play the card game. PIKAFELLITO is teaching me the rules!", createdAt: new Date('2026-06-15T20:00:00Z') },
+      { title: 'My favorite Pokemon is Pikachu ⚡', body: "I love Pikachu because he is Ash's best friend and he never gives up! I want a Pikachu backpack for school. Also Charizard is cool too but Pikachu is my NUMBER ONE. Ask Profesor Justin if you want to know more about Pikachu!", createdAt: new Date('2026-06-18T14:00:00Z') },
+      { title: 'We went to Pokemon League at the game store! 🏆', body: "Papi brought me to the Pokemon League event at the card shop on Saturday. There were so many cards everywhere! I watched the big kids battle and it looked SO cool. I want to learn to play the card game. Profesor Justin is teaching me the rules!", createdAt: new Date('2026-06-15T20:00:00Z') },
     ]);
   }
+  // One-time migration: rename PIKAFELLITO → Profesor Justin in existing posts
+  await Post.updateMany(
+    { body: /PIKAFELLITO/ },
+    [{ $set: { body: { $replaceAll: { input: '$body', find: 'PIKAFELLITO', replacement: 'Profesor Justin' } } } }]
+  );
+
   const pokCount = await Pokemon.countDocuments();
   if (pokCount === 0) {
     await Pokemon.insertMany([
@@ -303,7 +309,7 @@ app.post('/api/auth/request-account', async (req, res) => {
   res.json({ ok: true });
 });
 
-// ── PIKAFELLITO ───────────────────────────────────────────────────────────────
+// ── Profesor Justin ───────────────────────────────────────────────────────────
 const agentLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
@@ -322,7 +328,7 @@ app.post('/api/agent/chat', agentLimiter, async (req, res) => {
     res.json({ reply: result.reply });
   } catch (err) {
     console.error('Agent error:', err.message);
-    res.status(500).json({ error: 'PIKAFELLITO is resting! Try again in a moment. 😴' });
+    res.status(500).json({ error: 'Profesor Justin is resting! Try again in a moment. 😴' });
   }
 });
 
