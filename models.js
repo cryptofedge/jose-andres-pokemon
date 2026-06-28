@@ -79,6 +79,28 @@ const ReportSchema = new mongoose.Schema({
   closedAt:     { type: Date, default: null }
 });
 
+const SocialTokenSchema = new mongoose.Schema({
+  platform:     { type: String, required: true, unique: true },
+  accessToken:  { type: String, required: true },
+  refreshToken: { type: String, default: null },
+  expiresAt:    { type: Date, default: null },
+  channelId:    { type: String, default: null },
+  channelName:  { type: String, default: null },
+  avatarUrl:    { type: String, default: null },
+  connectedAt:  { type: Date, default: Date.now },
+});
+
+const PublishJobSchema = new mongoose.Schema({
+  title:       { type: String, required: true },
+  description: { type: String, default: '' },
+  videoPath:   { type: String, default: null },
+  thumbPath:   { type: String, default: null },
+  platforms:   [String],
+  results:     { type: mongoose.Schema.Types.Mixed, default: {} },
+  status:      { type: String, default: 'pending' },
+  createdAt:   { type: Date, default: Date.now },
+});
+
 module.exports = {
   Pokemon:       mongoose.model('Pokemon',  PokemonSchema),
   GalleryItem:   mongoose.model('Gallery',  GallerySchema),
@@ -87,4 +109,6 @@ module.exports = {
   PendingRequest:mongoose.model('Pending',  PendingSchema),
   ActivityLog:   mongoose.model('Activity', ActivitySchema),
   Report:        mongoose.model('Report',   ReportSchema),
+  SocialToken:   mongoose.model('SocialToken',  SocialTokenSchema),
+  PublishJob:    mongoose.model('PublishJob',   PublishJobSchema),
 };

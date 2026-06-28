@@ -9,13 +9,25 @@ const rateLimit   = require('express-rate-limit');
 const mongoose    = require('mongoose');
 const { scanText, scanObject } = require('./safety');
 const agent       = require('./agent');
-const { Pokemon, GalleryItem, Post, User, PendingRequest, ActivityLog, Report } = require('./models');
+const { Pokemon, GalleryItem, Post, User, PendingRequest, ActivityLog, Report, SocialToken, PublishJob } = require('./models');
+const { google } = require('googleapis');
+const ffmpeg     = require('fluent-ffmpeg');
+const ffmpegPath = require('ffmpeg-static');
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET     = process.env.JWT_SECRET     || 'pokeball-secret-2026';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'pikachu123';
 const MONGODB_URI    = process.env.MONGODB_URI    || '';
+const YT_CLIENT_ID     = process.env.YT_CLIENT_ID     || '';
+const YT_CLIENT_SECRET = process.env.YT_CLIENT_SECRET || '';
+const APP_URL          = process.env.APP_URL          || 'https://jose-andres-pokemon.onrender.com';
+const YT_REDIRECT      = `${APP_URL}/api/social/youtube/callback`;
+
+function getYTClient() {
+  return new google.auth.OAuth2(YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REDIRECT);
+}
 
 // ── MongoDB connect ───────────────────────────────────────────────────────────
 if (MONGODB_URI) {
@@ -544,6 +556,275 @@ app.post('/api/studio/generate', requireAdmin, async (req, res) => {
     console.error('Studio AI error:', e.message);
     res.status(500).json({ error: 'AI generation failed: ' + e.message });
   }
+});
+
+// ── Video editor — trim + text overlay ───────────────────────────────────────
+const editStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, 'uploads', 'raw');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => cb(null, `raw_${Date.now()}${path.extname(file.originalname)}`),
+});
+const editUpload = multer({ storage: editStorage, limits: { fileSize: 500 * 1024 * 1024 } });
+
+app.post('/api/admin/editor/upload', requireAdmin, editUpload.single('video'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file' });
+  res.json({ path: `/uploads/raw/${req.file.filename}`, filename: req.file.filename });
+});
+
+app.post('/api/admin/editor/process', requireAdmin, async (req, res) => {
+  const { filename, startTime, endTime, overlayText, overlayPosition, overlayColor, overlaySize } = req.body;
+  if (!filename) return res.status(400).json({ error: 'No filename' });
+
+  const inputPath  = path.join(__dirname, 'uploads', 'raw', filename);
+  const outName    = `edited_${Date.now()}.mp4`;
+  const outputDir  = path.join(__dirname, 'uploads', 'edited');
+  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+  const outputPath = path.join(outputDir, outName);
+
+  if (!fs.existsSync(inputPath)) return res.status(404).json({ error: 'Source file not found' });
+
+  try {
+    await new Promise((resolve, reject) => {
+      let cmd = ffmpeg(inputPath);
+
+      // trim
+      if (startTime !== undefined && startTime !== '') cmd = cmd.setStartTime(Number(startTime));
+      if (endTime   !== undefined && endTime   !== '') cmd = cmd.setDuration(Number(endTime) - Number(startTime || 0));
+
+      // text overlay
+      if (overlayText && overlayText.trim()) {
+        const pos = overlayPosition || 'bottom';
+        const yMap = { top: '50', middle: '(h-text_h)/2', bottom: '(h-text_h-50)' };
+        const y    = yMap[pos] || yMap.bottom;
+        const color = (overlayColor || '#ffffff').replace('#', '');
+        const size  = overlaySize || 48;
+        const safeText = overlayText.replace(/'/g, "\\'").replace(/:/g, '\\:');
+        cmd = cmd.videoFilters(
+          `drawtext=text='${safeText}':fontsize=${size}:fontcolor=0x${color}:x=(w-text_w)/2:y=${y}:shadowcolor=black:shadowx=2:shadowy=2`
+        );
+      }
+
+      cmd
+        .outputOptions(['-c:v libx264', '-preset fast', '-crf 22', '-c:a aac', '-movflags +faststart'])
+        .output(outputPath)
+        .on('end', resolve)
+        .on('error', reject)
+        .run();
+    });
+
+    res.json({ url: `/uploads/edited/${outName}`, filename: outName });
+  } catch (e) {
+    console.error('FFmpeg error:', e.message);
+    res.status(500).json({ error: 'Video processing failed: ' + e.message });
+  }
+});
+
+// Extract thumbnail frame
+app.post('/api/admin/editor/thumbnail', requireAdmin, async (req, res) => {
+  const { filename, time } = req.body;
+  if (!filename) return res.status(400).json({ error: 'No filename' });
+
+  const inputPath = path.join(__dirname, 'uploads', 'raw', filename);
+  const thumbName = `thumb_${Date.now()}.jpg`;
+  const thumbDir  = path.join(__dirname, 'uploads', 'thumbs');
+  if (!fs.existsSync(thumbDir)) fs.mkdirSync(thumbDir, { recursive: true });
+
+  try {
+    await new Promise((resolve, reject) => {
+      ffmpeg(inputPath)
+        .seekInput(Number(time) || 0)
+        .outputOptions(['-vframes 1', '-q:v 2'])
+        .output(path.join(thumbDir, thumbName))
+        .on('end', resolve)
+        .on('error', reject)
+        .run();
+    });
+    res.json({ url: `/uploads/thumbs/${thumbName}`, filename: thumbName });
+  } catch (e) {
+    res.status(500).json({ error: 'Thumbnail extraction failed: ' + e.message });
+  }
+});
+
+app.use('/uploads/edited', express.static(path.join(__dirname, 'uploads', 'edited')));
+app.use('/uploads/thumbs',  express.static(path.join(__dirname, 'uploads', 'thumbs')));
+
+// ── Social — get connected accounts ──────────────────────────────────────────
+app.get('/api/admin/social/status', requireAdmin, async (req, res) => {
+  const tokens = await SocialToken.find({}, 'platform channelName avatarUrl connectedAt');
+  const map = {};
+  tokens.forEach(t => { map[t.platform] = { channelName: t.channelName, avatarUrl: t.avatarUrl, connectedAt: t.connectedAt }; });
+  res.json(map);
+});
+
+app.delete('/api/admin/social/:platform', requireAdmin, async (req, res) => {
+  await SocialToken.deleteOne({ platform: req.params.platform });
+  res.json({ ok: true });
+});
+
+// ── YouTube OAuth ─────────────────────────────────────────────────────────────
+app.get('/api/social/youtube/connect', requireAdmin, (req, res) => {
+  if (!YT_CLIENT_ID) return res.status(400).json({ error: 'YT_CLIENT_ID not configured in env vars' });
+  const oauth2 = getYTClient();
+  const url = oauth2.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'],
+    prompt: 'consent',
+  });
+  res.redirect(url);
+});
+
+app.get('/api/social/youtube/callback', async (req, res) => {
+  const { code, error } = req.query;
+  if (error) return res.redirect('/admin?social_error=youtube_denied#tab-publish');
+  try {
+    const oauth2 = getYTClient();
+    const { tokens } = await oauth2.getToken(code);
+    oauth2.setCredentials(tokens);
+
+    const yt = google.youtube({ version: 'v3', auth: oauth2 });
+    const ch = await yt.channels.list({ part: ['snippet'], mine: true });
+    const channel = ch.data.items?.[0];
+
+    await SocialToken.findOneAndUpdate(
+      { platform: 'youtube' },
+      {
+        accessToken:  tokens.access_token,
+        refreshToken: tokens.refresh_token || undefined,
+        expiresAt:    tokens.expiry_date ? new Date(tokens.expiry_date) : null,
+        channelId:    channel?.id || null,
+        channelName:  channel?.snippet?.title || 'YouTube Channel',
+        avatarUrl:    channel?.snippet?.thumbnails?.default?.url || null,
+      },
+      { upsert: true, new: true }
+    );
+
+    res.redirect('/admin?social_success=youtube#tab-publish');
+  } catch (e) {
+    console.error('YouTube OAuth error:', e.message);
+    res.redirect('/admin?social_error=youtube_failed#tab-publish');
+  }
+});
+
+// ── Instagram / TikTok / Facebook — placeholder connect (OAuth setup needed) ─
+// These need developer app registration — UI shows instructions when clicked
+app.get('/api/social/:platform/connect', requireAdmin, (req, res) => {
+  const p = req.params.platform;
+  res.status(501).json({
+    error: `${p} OAuth not yet configured`,
+    setup: `Add ${p.toUpperCase()}_CLIENT_ID and ${p.toUpperCase()}_CLIENT_SECRET to Render env vars to enable`,
+  });
+});
+
+// ── Publish to all platforms ──────────────────────────────────────────────────
+app.post('/api/admin/publish', requireAdmin, async (req, res) => {
+  const { title, description, videoFilename, thumbFilename, platforms, postToSite, postTitle, postBody } = req.body;
+  if (!title) return res.status(400).json({ error: 'Title required' });
+
+  const job = await PublishJob.create({
+    title, description,
+    videoPath: videoFilename ? `/uploads/edited/${videoFilename}` : null,
+    thumbPath: thumbFilename ? `/uploads/thumbs/${thumbFilename}`  : null,
+    platforms: platforms || [],
+    status: 'running',
+  });
+
+  const results = {};
+  const errors  = {};
+
+  // ── Post to Jose's site ──
+  if (postToSite) {
+    try {
+      const entry = await Post.create({
+        title: postTitle || title,
+        body:  postBody  || description,
+        mediaUrl:  videoFilename ? `/uploads/edited/${videoFilename}` : null,
+        mediaType: videoFilename ? 'video' : null,
+      });
+      results.site = { ok: true, id: entry._id };
+    } catch (e) {
+      errors.site = e.message;
+    }
+  }
+
+  // ── Post to YouTube ──
+  if ((platforms || []).includes('youtube')) {
+    try {
+      const tokenDoc = await SocialToken.findOne({ platform: 'youtube' });
+      if (!tokenDoc) throw new Error('YouTube not connected');
+
+      const oauth2 = getYTClient();
+      oauth2.setCredentials({
+        access_token:  tokenDoc.accessToken,
+        refresh_token: tokenDoc.refreshToken,
+        expiry_date:   tokenDoc.expiresAt?.getTime(),
+      });
+
+      const videoPath = path.join(__dirname, 'uploads', 'edited', videoFilename);
+      if (!fs.existsSync(videoPath)) throw new Error('Video file not found');
+
+      const yt = google.youtube({ version: 'v3', auth: oauth2 });
+
+      const uploadParams = {
+        part: ['snippet', 'status'],
+        requestBody: {
+          snippet: {
+            title,
+            description,
+            tags: ['Pokemon', 'JoseAndres', 'Pokemon Cards', 'Kids Pokemon'],
+            categoryId: '20',
+            defaultLanguage: 'es',
+          },
+          status: { privacyStatus: 'public' },
+        },
+        media: { body: fs.createReadStream(videoPath) },
+      };
+
+      if (thumbFilename) {
+        const ytRes = await yt.videos.insert(uploadParams);
+        const videoId = ytRes.data.id;
+        const thumbPath = path.join(__dirname, 'uploads', 'thumbs', thumbFilename);
+        if (fs.existsSync(thumbPath)) {
+          await yt.thumbnails.set({
+            videoId,
+            media: { mimeType: 'image/jpeg', body: fs.createReadStream(thumbPath) },
+          });
+        }
+        results.youtube = { ok: true, videoId, url: `https://youtu.be/${videoId}` };
+      } else {
+        const ytRes = await yt.videos.insert(uploadParams);
+        results.youtube = { ok: true, videoId: ytRes.data.id, url: `https://youtu.be/${ytRes.data.id}` };
+      }
+
+      // refresh stored token if rotated
+      const newCreds = oauth2.credentials;
+      if (newCreds.access_token !== tokenDoc.accessToken) {
+        await SocialToken.updateOne({ platform: 'youtube' }, { accessToken: newCreds.access_token });
+      }
+    } catch (e) {
+      errors.youtube = e.message;
+    }
+  }
+
+  // ── Instagram / TikTok / Facebook — queue for when OAuth is configured ──
+  ['instagram', 'tiktok', 'facebook'].forEach(p => {
+    if ((platforms || []).includes(p)) {
+      errors[p] = `${p} posting requires OAuth setup — connect the account first`;
+    }
+  });
+
+  const status = Object.keys(errors).length === 0 ? 'done' : (Object.keys(results).length > 0 ? 'partial' : 'failed');
+  await PublishJob.findByIdAndUpdate(job._id, { results, status });
+
+  res.json({ ok: true, jobId: job._id, results, errors, status });
+});
+
+// ── Publish history ───────────────────────────────────────────────────────────
+app.get('/api/admin/publish/history', requireAdmin, async (req, res) => {
+  const jobs = await PublishJob.find().sort({ createdAt: -1 }).limit(20);
+  res.json(jobs);
 });
 
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin', 'index.html')));

@@ -296,6 +296,155 @@
 
     /* ── Studio tab ── */
     .tab-studio.active { background: var(--blue) !important; box-shadow: 0 2px 12px rgba(61,125,202,0.4) !important; }
+    .tab-editor.active  { background: #7c3aed !important; box-shadow: 0 2px 12px rgba(124,58,237,0.4) !important; }
+    .tab-publish.active { background: #059669 !important; box-shadow: 0 2px 12px rgba(5,150,105,0.4) !important; }
+
+    /* ── Video Editor ── */
+    .editor-layout { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+    @media (max-width: 820px) { .editor-layout { grid-template-columns: 1fr; } }
+
+    .video-stage {
+      background: #000;
+      border-radius: 16px;
+      aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .video-stage video { width: 100%; height: 100%; object-fit: contain; }
+    .video-stage .stage-empty {
+      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      color: rgba(255,255,255,0.3);
+    }
+    .video-stage .stage-empty .big-icon { font-size: 56px; }
+
+    .video-drop-zone {
+      border: 2px dashed rgba(124,58,237,0.4);
+      border-radius: 14px; padding: 40px 24px;
+      text-align: center; cursor: pointer;
+      transition: all 0.2s; margin-bottom: 16px;
+      background: rgba(124,58,237,0.03);
+    }
+    .video-drop-zone:hover, .video-drop-zone.drag-over {
+      border-color: #7c3aed; background: rgba(124,58,237,0.08);
+    }
+    .video-drop-zone .dz-icon { font-size: 40px; margin-bottom: 10px; }
+    .video-drop-zone p { color: rgba(255,255,255,0.5); font-size: 14px; }
+    .video-drop-zone strong { color: #a78bfa; }
+
+    .trim-bar {
+      position: relative; height: 48px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 10px; overflow: hidden;
+      margin: 12px 0;
+    }
+    .trim-track {
+      position: absolute; top: 0; bottom: 0;
+      background: rgba(124,58,237,0.3);
+      border-left: 3px solid #7c3aed;
+      border-right: 3px solid #7c3aed;
+    }
+    .trim-playhead {
+      position: absolute; top: 0; bottom: 0;
+      width: 2px; background: var(--yellow);
+      pointer-events: none;
+    }
+    .trim-labels { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+
+    .editor-controls { display: flex; flex-direction: column; gap: 14px; }
+    .ctrl-section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; }
+    .ctrl-section h4 { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+
+    .time-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .time-inputs label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+    .time-inputs input { font-size: 13px; }
+
+    .overlay-preview {
+      position: absolute; bottom: 40px; left: 0; right: 0;
+      text-align: center; pointer-events: none;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
+      font-weight: 900; font-family: var(--font-body);
+      padding: 0 16px; font-size: 28px;
+    }
+
+    .thumb-strip {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding: 4px 0; margin-top: 8px;
+    }
+    .thumb-frame {
+      width: 80px; height: 45px; flex-shrink: 0;
+      border-radius: 6px; object-fit: cover;
+      border: 2px solid transparent; cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .thumb-frame.selected { border-color: var(--yellow); }
+
+    .progress-bar-wrap { background: rgba(255,255,255,0.08); border-radius: 999px; height: 6px; margin-top: 8px; }
+    .progress-bar-fill { background: #7c3aed; height: 6px; border-radius: 999px; transition: width 0.3s; }
+
+    /* ── Publish Hub ── */
+    .publish-layout { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+    @media (max-width: 820px) { .publish-layout { grid-template-columns: 1fr; } }
+
+    .platform-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .platform-card {
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.09);
+      border-radius: 14px; padding: 18px;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: all 0.2s; cursor: pointer; position: relative;
+    }
+    .platform-card.connected { border-color: rgba(5,150,105,0.4); background: rgba(5,150,105,0.05); }
+    .platform-card.selected  { border-color: rgba(5,150,105,0.7); box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
+    .platform-card:hover { border-color: rgba(255,255,255,0.2); }
+    .platform-top { display: flex; align-items: center; gap: 12px; }
+    .platform-icon { font-size: 28px; }
+    .platform-name { font-weight: 800; font-size: 15px; }
+    .platform-handle { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .platform-status { font-size: 11px; font-weight: 700; }
+    .platform-status.ok   { color: #34d399; }
+    .platform-status.off  { color: rgba(255,255,255,0.3); }
+    .platform-check {
+      position: absolute; top: 12px; right: 12px;
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; background: transparent; transition: all 0.15s;
+    }
+    .platform-card.selected .platform-check { background: #059669; border-color: #059669; }
+
+    .publish-connect-btn {
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.7); padding: 7px 14px; border-radius: 8px;
+      cursor: pointer; font-size: 12px; font-family: var(--font-body); font-weight: 700;
+      transition: all 0.15s; text-align: center;
+    }
+    .publish-connect-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .publish-connect-btn.disconnect { color: #f87171; border-color: rgba(248,113,113,0.3); }
+
+    .publish-history-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; border-radius: 10px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      margin-bottom: 8px; font-size: 13px;
+    }
+    .publish-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .publish-status-dot.done    { background: #34d399; }
+    .publish-status-dot.partial { background: var(--yellow); }
+    .publish-status-dot.failed  { background: var(--red); }
+    .publish-status-dot.running { background: #60a5fa; animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    .video-attach-preview {
+      background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px; padding: 14px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .video-attach-preview video { width: 120px; height: 68px; border-radius: 8px; object-fit: cover; }
+    .video-attach-info { flex: 1; }
+    .video-attach-info strong { font-size: 14px; }
+    .video-attach-info span { font-size: 12px; color: rgba(255,255,255,0.4); display: block; margin-top: 2px; }
     .studio-spinner { display: inline-block; animation: spin 1s linear infinite; margin-right: 6px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -603,6 +752,8 @@
       <button class="tab-btn" onclick="switchTab('tab-requests', this)">📋 Requests <span id="req-badge" class="badge hidden"></span></button>
       <button class="tab-btn tab-danger" onclick="switchTab('tab-safety', this)">🚨 Safety <span id="safety-badge" class="badge hidden"></span></button>
       <button class="tab-btn tab-studio" onclick="switchTab('tab-studio', this)">🎬 Studio</button>
+      <button class="tab-btn tab-editor" onclick="switchTab('tab-editor', this)">✂️ Editor</button>
+      <button class="tab-btn tab-publish" onclick="switchTab('tab-publish', this)">🚀 Publish</button>
     </div>
 
     <!-- ── TAB: Pokemon ── -->
@@ -889,6 +1040,212 @@
           <div id="title-output" class="studio-output hidden">
             <div id="title-text"></div>
             <button class="copy-btn" onclick="copyText('title-text')">📋 Copy</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── TAB: Video Editor ── -->
+    <div id="tab-editor" class="tab-panel">
+
+      <div class="editor-layout">
+
+        <!-- Left: stage + trim -->
+        <div>
+          <!-- Upload zone (shown when no video loaded) -->
+          <div id="editor-dropzone" class="video-drop-zone" onclick="document.getElementById('editor-file-input').click()" ondragover="editorDragOver(event)" ondrop="editorDrop(event)">
+            <input type="file" id="editor-file-input" accept="video/*" style="display:none" onchange="editorLoadFile(this)" />
+            <div class="dz-icon">🎬</div>
+            <p><strong>Click to upload</strong> or drag & drop a video</p>
+            <p style="font-size:12px;margin-top:6px;color:rgba(255,255,255,0.3)">MP4, MOV, AVI · up to 500 MB</p>
+          </div>
+
+          <!-- Video stage (hidden until video loaded) -->
+          <div id="editor-stage" class="video-stage" style="display:none;margin-bottom:14px">
+            <video id="editor-video" ontimeupdate="editorTimeUpdate()" onloadedmetadata="editorMetaLoaded()"></video>
+            <div id="editor-overlay-preview" class="overlay-preview" style="display:none"></div>
+          </div>
+
+          <!-- Playback controls -->
+          <div id="editor-playback" style="display:none;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <button class="btn btn-ghost btn-sm" onclick="editorTogglePlay()" id="play-btn">▶ Play</button>
+              <span id="editor-time-display" style="font-size:13px;color:rgba(255,255,255,0.5);font-family:monospace">0:00 / 0:00</span>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="editorCapThumb()">📸 Grab Thumb</button>
+            </div>
+
+            <!-- Trim bar -->
+            <div class="trim-labels">
+              <span id="trim-start-label">Start: 0s</span>
+              <span id="trim-end-label">End: —</span>
+            </div>
+            <div class="trim-bar" id="trim-bar" onclick="trimBarClick(event)">
+              <div class="trim-track" id="trim-track"></div>
+              <div class="trim-playhead" id="trim-playhead"></div>
+            </div>
+            <div class="time-inputs">
+              <div>
+                <label>Trim Start (sec)</label>
+                <input type="number" id="trim-start" value="0" min="0" step="0.5" oninput="updateTrimUI()" />
+              </div>
+              <div>
+                <label>Trim End (sec)</label>
+                <input type="number" id="trim-end" value="" step="0.5" placeholder="Full length" oninput="updateTrimUI()" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Thumbnail strip -->
+          <div id="thumb-strip-wrap" style="display:none">
+            <label>Thumbnail Frames</label>
+            <div class="thumb-strip" id="thumb-strip"></div>
+            <div id="selected-thumb-wrap" style="display:none;margin-top:10px">
+              <label>Selected Thumbnail</label>
+              <img id="selected-thumb-img" style="width:180px;border-radius:10px;border:2px solid var(--yellow)" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: controls panel -->
+        <div class="editor-controls">
+
+          <!-- Text Overlay -->
+          <div class="ctrl-section">
+            <h4>✏️ Text Overlay</h4>
+            <label>Text</label>
+            <input type="text" id="overlay-text" placeholder="e.g. CHARIZARD PULLED!!" oninput="updateOverlayPreview()" style="margin-bottom:10px" />
+            <label>Position</label>
+            <select id="overlay-pos" style="margin-bottom:10px" onchange="updateOverlayPreview()">
+              <option value="bottom">Bottom</option>
+              <option value="middle">Middle</option>
+              <option value="top">Top</option>
+            </select>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              <div>
+                <label>Color</label>
+                <input type="color" id="overlay-color" value="#ffffff" oninput="updateOverlayPreview()" style="width:100%;height:42px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.05);cursor:pointer;padding:4px" />
+              </div>
+              <div>
+                <label>Size (px)</label>
+                <input type="number" id="overlay-size" value="48" min="16" max="120" oninput="updateOverlayPreview()" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Upload status -->
+          <div class="ctrl-section" id="upload-status-box" style="display:none">
+            <h4>📤 Upload Progress</h4>
+            <div id="upload-status-text" style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:8px">Uploading to server…</div>
+            <div class="progress-bar-wrap"><div class="progress-bar-fill" id="upload-progress" style="width:0%"></div></div>
+          </div>
+
+          <!-- Processing status -->
+          <div class="ctrl-section" id="process-status-box" style="display:none">
+            <h4>⚙️ Processing</h4>
+            <div id="process-status-text" style="font-size:13px;color:rgba(255,255,255,0.6)">Running FFmpeg…</div>
+          </div>
+
+          <!-- Processed result -->
+          <div class="ctrl-section" id="processed-result" style="display:none">
+            <h4>✅ Ready to Publish</h4>
+            <div id="processed-video-wrap" style="margin-bottom:10px">
+              <video id="processed-preview" controls style="width:100%;border-radius:10px"></video>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="sendToPublish()">🚀 Send to Publish Hub</button>
+          </div>
+
+          <!-- Process button -->
+          <div id="process-btn-wrap" style="display:none">
+            <button class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,#8b5cf6,#7c3aed)" id="process-btn" onclick="processVideo()">
+              ⚙️ Process Video
+            </button>
+            <p style="font-size:11px;color:rgba(255,255,255,0.3);text-align:center;margin-top:8px">Applies trim, overlay & exports MP4</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Publish Hub ── -->
+    <div id="tab-publish" class="tab-panel">
+      <div class="publish-layout">
+
+        <!-- Left: compose + platforms -->
+        <div>
+          <!-- Video attach -->
+          <div class="panel-card" style="margin-bottom:16px">
+            <h3 class="panel-title">🎥 Video</h3>
+            <div id="publish-no-video" style="color:rgba(255,255,255,0.4);font-size:14px;padding:12px 0">
+              No video attached. <a href="#" onclick="switchTab('tab-editor',null);return false" style="color:#a78bfa">Go to Editor →</a> or skip to post text only.
+            </div>
+            <div id="publish-video-preview" class="video-attach-preview" style="display:none">
+              <video id="publish-video-el" controls></video>
+              <div class="video-attach-info">
+                <strong id="publish-video-name">video.mp4</strong>
+                <span id="publish-video-meta"></span>
+                <button class="btn btn-ghost btn-xs" style="margin-top:8px" onclick="clearPublishVideo()">✕ Remove</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Post details -->
+          <div class="panel-card" style="margin-bottom:16px">
+            <h3 class="panel-title">📝 Post Details</h3>
+            <label>Title / Video Title</label>
+            <input type="text" id="publish-title" placeholder="e.g. I pulled a Charizard EX!! 🔥" style="margin-bottom:12px" />
+            <label>Description / Caption</label>
+            <textarea id="publish-desc" placeholder="Write your description, caption, hashtags…" style="min-height:120px"></textarea>
+            <div style="margin-top:12px;display:flex;align-items:center;gap:10px">
+              <input type="checkbox" id="publish-to-site" checked style="width:auto;accent-color:var(--yellow)" />
+              <label style="text-transform:none;letter-spacing:0;font-size:14px;color:rgba(255,255,255,0.7);margin:0">Also post to Jose's site as a news update</label>
+            </div>
+          </div>
+
+          <!-- Platform select -->
+          <div class="panel-card" style="margin-bottom:16px">
+            <h3 class="panel-title">📡 Platforms</h3>
+            <div class="platform-grid" id="platform-grid">
+              <!-- rendered by JS -->
+            </div>
+          </div>
+
+          <!-- Publish button -->
+          <button class="btn btn-primary" style="width:100%;padding:16px;font-size:16px;background:linear-gradient(135deg,#10b981,#059669);box-shadow:0 4px 20px rgba(5,150,105,0.35)" onclick="publishEverywhere()" id="publish-btn">
+            🚀 Post Everywhere
+          </button>
+
+          <!-- Publish result -->
+          <div id="publish-result" style="display:none;margin-top:16px"></div>
+        </div>
+
+        <!-- Right: history + setup guide -->
+        <div>
+          <!-- Setup guide for YouTube -->
+          <div class="panel-card" style="margin-bottom:16px">
+            <h3 class="panel-title">⚙️ YouTube Setup</h3>
+            <p style="font-size:13px;color:rgba(255,255,255,0.5);line-height:1.7;margin-bottom:14px">
+              To post directly to YouTube, you need a Google Cloud project with the YouTube Data API enabled.
+            </p>
+            <ol style="font-size:12px;color:rgba(255,255,255,0.45);line-height:2;padding-left:18px;margin-bottom:14px">
+              <li>Go to <strong style="color:#a78bfa">console.cloud.google.com</strong></li>
+              <li>Create project → Enable <strong style="color:#a78bfa">YouTube Data API v3</strong></li>
+              <li>Create OAuth 2.0 credentials (Web App)</li>
+              <li>Add redirect URI:<br/><code style="font-size:10px;color:#34d399;background:rgba(0,0,0,0.3);padding:2px 6px;border-radius:4px">https://jose-andres-pokemon.onrender.com/api/social/youtube/callback</code></li>
+              <li>Add <strong style="color:#a78bfa">YT_CLIENT_ID</strong> + <strong style="color:#a78bfa">YT_CLIENT_SECRET</strong> to Render env vars</li>
+              <li>Click <strong>Connect YouTube</strong> below</li>
+            </ol>
+            <a href="/api/social/youtube/connect" class="btn btn-primary" style="display:block;text-align:center;text-decoration:none;background:linear-gradient(135deg,#ef4444,#dc2626)">
+              ▶️ Connect YouTube
+            </a>
+          </div>
+
+          <!-- Publish history -->
+          <div class="panel-card">
+            <h3 class="panel-title">📋 Publish History</h3>
+            <div id="publish-history">
+              <div class="empty-msg">No publish jobs yet</div>
+            </div>
           </div>
         </div>
 
@@ -1410,6 +1767,8 @@ function loadAll() {
   loadFriends(); loadRequests(); loadSafety();
   buildAvatarPicker();
   loadYouTube();
+  loadSocialStatus();
+  checkOAuthReturn && checkOAuthReturn();
 }
 
 // ── Studio ────────────────────────────────────────────────────────
@@ -1520,6 +1879,417 @@ function copyText(elId) {
   navigator.clipboard.writeText(text).then(() => showToast('📋 Copied to clipboard!'));
 }
 
+// ── Video Editor ──────────────────────────────────────────────────
+let editorRawFilename = null;
+let editorDuration    = 0;
+let editorThumbFile   = null;
+let editorEditedFile  = null;
+
+function editorDragOver(e) { e.preventDefault(); document.getElementById('editor-dropzone').classList.add('drag-over'); }
+function editorDrop(e) {
+  e.preventDefault();
+  document.getElementById('editor-dropzone').classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('video/')) editorUploadFile(file);
+}
+function editorLoadFile(input) {
+  if (input.files[0]) editorUploadFile(input.files[0]);
+}
+
+async function editorUploadFile(file) {
+  document.getElementById('editor-dropzone').style.display = 'none';
+  document.getElementById('upload-status-box').style.display = 'block';
+  document.getElementById('upload-status-text').textContent = `Uploading ${file.name}…`;
+
+  const formData = new FormData();
+  formData.append('video', file);
+
+  try {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/api/admin/editor/upload');
+    xhr.setRequestHeader('x-admin-password', adminPassword);
+    xhr.upload.onprogress = e => {
+      if (e.lengthComputable) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        document.getElementById('upload-progress').style.width = pct + '%';
+        document.getElementById('upload-status-text').textContent = `Uploading… ${pct}%`;
+      }
+    };
+    xhr.onload = () => {
+      const data = JSON.parse(xhr.responseText);
+      if (xhr.status === 200) {
+        editorRawFilename = data.filename;
+        document.getElementById('upload-status-box').style.display = 'none';
+        showEditorVideo(data.path, file.name);
+      } else {
+        showToast('Upload failed: ' + (data.error || 'unknown'), true);
+        resetEditor();
+      }
+    };
+    xhr.onerror = () => { showToast('Upload error', true); resetEditor(); };
+    xhr.send(formData);
+  } catch(e) { showToast('Upload failed: ' + e.message, true); resetEditor(); }
+}
+
+function showEditorVideo(src, name) {
+  const vid = document.getElementById('editor-video');
+  vid.src = src;
+  document.getElementById('editor-stage').style.display = 'flex';
+  document.getElementById('editor-playback').style.display = 'block';
+  document.getElementById('process-btn-wrap').style.display = 'block';
+}
+
+function editorMetaLoaded() {
+  const vid = document.getElementById('editor-video');
+  editorDuration = vid.duration;
+  document.getElementById('trim-end').value = editorDuration.toFixed(1);
+  document.getElementById('trim-end').max   = editorDuration;
+  document.getElementById('trim-start').max = editorDuration;
+  updateTrimUI();
+  generateThumbStrip();
+  document.getElementById('thumb-strip-wrap').style.display = 'block';
+}
+
+function editorTimeUpdate() {
+  const vid = document.getElementById('editor-video');
+  const pct = editorDuration ? (vid.currentTime / editorDuration) * 100 : 0;
+  document.getElementById('trim-playhead').style.left = pct + '%';
+  const cur = fmtTime(vid.currentTime), dur = fmtTime(editorDuration);
+  document.getElementById('editor-time-display').textContent = `${cur} / ${dur}`;
+}
+
+function editorTogglePlay() {
+  const vid = document.getElementById('editor-video');
+  const btn = document.getElementById('play-btn');
+  if (vid.paused) { vid.play(); btn.textContent = '⏸ Pause'; }
+  else            { vid.pause(); btn.textContent = '▶ Play'; }
+}
+
+function trimBarClick(e) {
+  const bar = document.getElementById('trim-bar');
+  const pct = e.offsetX / bar.offsetWidth;
+  const vid = document.getElementById('editor-video');
+  vid.currentTime = pct * editorDuration;
+}
+
+function updateTrimUI() {
+  const start = parseFloat(document.getElementById('trim-start').value) || 0;
+  const end   = parseFloat(document.getElementById('trim-end').value)   || editorDuration;
+  if (!editorDuration) return;
+  const startPct = (start / editorDuration) * 100;
+  const endPct   = (end   / editorDuration) * 100;
+  const track = document.getElementById('trim-track');
+  track.style.left  = startPct + '%';
+  track.style.width = (endPct - startPct) + '%';
+  document.getElementById('trim-start-label').textContent = `Start: ${fmtTime(start)}`;
+  document.getElementById('trim-end-label').textContent   = `End: ${fmtTime(end)}`;
+}
+
+function updateOverlayPreview() {
+  const text  = document.getElementById('overlay-text').value;
+  const color = document.getElementById('overlay-color').value;
+  const size  = document.getElementById('overlay-size').value;
+  const pos   = document.getElementById('overlay-pos').value;
+  const el    = document.getElementById('editor-overlay-preview');
+  if (!text) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.style.color   = color;
+  el.style.fontSize = size + 'px';
+  el.textContent    = text;
+  const posMap = { top: '40px', middle: '50%', bottom: '40px' };
+  el.style.bottom = pos === 'bottom' ? '40px' : 'auto';
+  el.style.top    = pos === 'top'    ? '40px' : (pos === 'middle' ? '50%' : 'auto');
+  el.style.transform = pos === 'middle' ? 'translateY(-50%)' : 'none';
+}
+
+async function generateThumbStrip() {
+  if (!editorRawFilename || !editorDuration) return;
+  const strip = document.getElementById('thumb-strip');
+  strip.innerHTML = '';
+  const count = Math.min(6, Math.floor(editorDuration / 2) + 1);
+  for (let i = 0; i < count; i++) {
+    const t = Math.round((editorDuration / (count - 1 || 1)) * i);
+    try {
+      const res = await fetch('/api/admin/editor/thumbnail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+        body: JSON.stringify({ filename: editorRawFilename, time: t })
+      });
+      const data = await res.json();
+      if (data.url) {
+        const img = document.createElement('img');
+        img.src = data.url; img.className = 'thumb-frame';
+        img.dataset.filename = data.filename;
+        img.onclick = () => selectThumb(img, data.url, data.filename);
+        strip.appendChild(img);
+      }
+    } catch(e) { /* skip failed frame */ }
+  }
+}
+
+function selectThumb(img, url, filename) {
+  document.querySelectorAll('.thumb-frame').forEach(f => f.classList.remove('selected'));
+  img.classList.add('selected');
+  editorThumbFile = filename;
+  const wrap = document.getElementById('selected-thumb-wrap');
+  wrap.style.display = 'block';
+  document.getElementById('selected-thumb-img').src = url;
+}
+
+async function editorCapThumb() {
+  const vid = document.getElementById('editor-video');
+  const t   = vid.currentTime;
+  try {
+    const res  = await fetch('/api/admin/editor/thumbnail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({ filename: editorRawFilename, time: t })
+    });
+    const data = await res.json();
+    if (data.url) {
+      editorThumbFile = data.filename;
+      const wrap = document.getElementById('selected-thumb-wrap');
+      wrap.style.display = 'block';
+      document.getElementById('selected-thumb-img').src = data.url;
+      showToast('📸 Thumbnail captured!');
+    }
+  } catch(e) { showToast('Failed to capture frame', true); }
+}
+
+async function processVideo() {
+  if (!editorRawFilename) return showToast('Upload a video first', true);
+  const btn = document.getElementById('process-btn');
+  btn.disabled = true; btn.textContent = '⚙️ Processing…';
+  document.getElementById('process-status-box').style.display = 'block';
+  document.getElementById('process-btn-wrap').style.display   = 'none';
+
+  try {
+    const res = await fetch('/api/admin/editor/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({
+        filename:        editorRawFilename,
+        startTime:       document.getElementById('trim-start').value,
+        endTime:         document.getElementById('trim-end').value,
+        overlayText:     document.getElementById('overlay-text').value,
+        overlayPosition: document.getElementById('overlay-pos').value,
+        overlayColor:    document.getElementById('overlay-color').value,
+        overlaySize:     document.getElementById('overlay-size').value,
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Processing failed');
+
+    editorEditedFile = data.filename;
+    document.getElementById('process-status-box').style.display = 'none';
+    document.getElementById('processed-result').style.display   = 'block';
+    document.getElementById('processed-preview').src = data.url;
+    showToast('✅ Video ready!');
+  } catch(e) {
+    showToast('Error: ' + e.message, true);
+    document.getElementById('process-status-box').style.display = 'none';
+    document.getElementById('process-btn-wrap').style.display = 'block';
+    btn.disabled = false; btn.textContent = '⚙️ Process Video';
+  }
+}
+
+function sendToPublish() {
+  if (editorEditedFile) {
+    publishAttachVideo(`/uploads/edited/${editorEditedFile}`, editorEditedFile, editorThumbFile);
+  }
+  switchTab('tab-publish', document.querySelector('.tab-btn.tab-publish'));
+}
+
+function resetEditor() {
+  document.getElementById('editor-dropzone').style.display = 'block';
+  document.getElementById('editor-stage').style.display    = 'none';
+  document.getElementById('editor-playback').style.display = 'none';
+  document.getElementById('process-btn-wrap').style.display = 'none';
+  document.getElementById('upload-status-box').style.display = 'none';
+  document.getElementById('process-status-box').style.display = 'none';
+  document.getElementById('processed-result').style.display   = 'none';
+  document.getElementById('thumb-strip-wrap').style.display   = 'none';
+  editorRawFilename = null; editorDuration = 0; editorThumbFile = null; editorEditedFile = null;
+}
+
+function fmtTime(s) {
+  if (!s || isNaN(s)) return '0:00';
+  const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+  return `${m}:${sec.toString().padStart(2,'0')}`;
+}
+
+// ── Publish Hub ───────────────────────────────────────────────────
+let publishVideoFilename = null;
+let publishThumbFilename = null;
+let socialStatus = {};
+const PLATFORMS = [
+  { id: 'youtube',   name: 'YouTube',   icon: '▶️',  color: '#ff0000' },
+  { id: 'instagram', name: 'Instagram', icon: '📸',  color: '#e1306c' },
+  { id: 'tiktok',    name: 'TikTok',    icon: '🎵',  color: '#010101' },
+  { id: 'facebook',  name: 'Facebook',  icon: '👍',  color: '#1877f2' },
+];
+
+async function loadSocialStatus() {
+  try {
+    const res  = await fetch('/api/admin/social/status', { headers: { 'x-admin-password': adminPassword } });
+    socialStatus = await res.json();
+    renderPlatformGrid();
+    loadPublishHistory();
+  } catch(e) { console.error('Social status error:', e); }
+}
+
+function renderPlatformGrid() {
+  const grid = document.getElementById('platform-grid');
+  if (!grid) return;
+  grid.innerHTML = PLATFORMS.map(p => {
+    const conn = socialStatus[p.id];
+    const isConn = !!conn;
+    return `<div class="platform-card ${isConn ? 'connected' : ''}" id="pcard-${p.id}" onclick="togglePlatform('${p.id}')">
+      <div class="platform-check" id="pcheck-${p.id}">✓</div>
+      <div class="platform-top">
+        <span class="platform-icon">${p.icon}</span>
+        <div>
+          <div class="platform-name">${p.name}</div>
+          <div class="platform-handle">${conn ? conn.channelName || 'Connected' : 'Not connected'}</div>
+        </div>
+      </div>
+      <div class="platform-status ${isConn ? 'ok' : 'off'}">${isConn ? '● Connected' : '○ Not connected'}</div>
+      ${isConn
+        ? `<button class="publish-connect-btn disconnect" onclick="disconnectPlatform(event,'${p.id}')">Disconnect</button>`
+        : `<button class="publish-connect-btn" onclick="connectPlatform(event,'${p.id}')">Connect</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function togglePlatform(id) {
+  const card = document.getElementById('pcard-' + id);
+  if (!card) return;
+  if (!socialStatus[id]) return; // must connect first
+  card.classList.toggle('selected');
+}
+
+function connectPlatform(e, platform) {
+  e.stopPropagation();
+  if (platform === 'youtube') {
+    window.location.href = '/api/social/youtube/connect';
+  } else {
+    showToast(`${platform} — add ${platform.toUpperCase()}_CLIENT_ID to Render env vars, then reconnect`, true);
+  }
+}
+
+async function disconnectPlatform(e, platform) {
+  e.stopPropagation();
+  await fetch(`/api/admin/social/${platform}`, { method: 'DELETE', headers: { 'x-admin-password': adminPassword } });
+  delete socialStatus[platform];
+  renderPlatformGrid();
+  showToast(`${platform} disconnected`);
+}
+
+function publishAttachVideo(url, filename, thumbFilename) {
+  publishVideoFilename = filename;
+  publishThumbFilename = thumbFilename || null;
+  document.getElementById('publish-no-video').style.display    = 'none';
+  document.getElementById('publish-video-preview').style.display = 'flex';
+  document.getElementById('publish-video-el').src  = url;
+  document.getElementById('publish-video-name').textContent = filename;
+}
+
+function clearPublishVideo() {
+  publishVideoFilename = null; publishThumbFilename = null;
+  document.getElementById('publish-no-video').style.display      = 'block';
+  document.getElementById('publish-video-preview').style.display = 'none';
+  document.getElementById('publish-video-el').src = '';
+}
+
+async function publishEverywhere() {
+  const title  = document.getElementById('publish-title').value.trim();
+  const desc   = document.getElementById('publish-desc').value.trim();
+  const toSite = document.getElementById('publish-to-site').checked;
+  if (!title) return showToast('Enter a title first', true);
+
+  const selectedPlatforms = PLATFORMS
+    .filter(p => document.getElementById('pcard-' + p.id)?.classList.contains('selected'))
+    .map(p => p.id);
+
+  if (!toSite && selectedPlatforms.length === 0) return showToast('Select at least one platform', true);
+
+  const btn = document.getElementById('publish-btn');
+  btn.disabled = true; btn.textContent = '⏳ Publishing…';
+
+  try {
+    const res = await fetch('/api/admin/publish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({
+        title, description: desc,
+        videoFilename: publishVideoFilename,
+        thumbFilename: publishThumbFilename,
+        platforms: selectedPlatforms,
+        postToSite: toSite,
+        postTitle: title,
+        postBody:  desc,
+      })
+    });
+    const data = await res.json();
+    showPublishResult(data);
+    loadPublishHistory();
+  } catch(e) {
+    showToast('Publish error: ' + e.message, true);
+  } finally {
+    btn.disabled = false; btn.textContent = '🚀 Post Everywhere';
+  }
+}
+
+function showPublishResult(data) {
+  const wrap = document.getElementById('publish-result');
+  wrap.style.display = 'block';
+  const successKeys = Object.keys(data.results || {});
+  const errorKeys   = Object.keys(data.errors  || {});
+  let html = `<div class="panel-card">`;
+  html += `<h3 class="panel-title">${data.status === 'done' ? '✅' : data.status === 'partial' ? '⚠️' : '❌'} Publish ${data.status}</h3>`;
+  successKeys.forEach(k => {
+    const r = data.results[k];
+    html += `<div style="color:#34d399;font-size:14px;margin-bottom:6px">✅ ${k}${r.url ? ` — <a href="${r.url}" target="_blank" style="color:#34d399">${r.url}</a>` : ''}</div>`;
+  });
+  errorKeys.forEach(k => {
+    html += `<div style="color:#f87171;font-size:13px;margin-bottom:4px">❌ ${k}: ${data.errors[k]}</div>`;
+  });
+  html += '</div>';
+  wrap.innerHTML = html;
+}
+
+async function loadPublishHistory() {
+  try {
+    const res  = await fetch('/api/admin/publish/history', { headers: { 'x-admin-password': adminPassword } });
+    const jobs = await res.json();
+    const wrap = document.getElementById('publish-history');
+    if (!jobs.length) { wrap.innerHTML = '<div class="empty-msg">No publish jobs yet</div>'; return; }
+    wrap.innerHTML = jobs.map(j => {
+      const icons = (j.platforms || []).map(p => PLATFORMS.find(x => x.id === p)?.icon || '').join(' ');
+      const date  = new Date(j.createdAt).toLocaleDateString();
+      return `<div class="publish-history-row">
+        <div class="publish-status-dot ${j.status}"></div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px">${j.title}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.35)">${date} · ${icons || 'Site only'}</div>
+        </div>
+        <span style="font-size:11px;color:rgba(255,255,255,0.3);text-transform:capitalize">${j.status}</span>
+      </div>`;
+    }).join('');
+  } catch(e) { /* silent */ }
+}
+
+// Check for OAuth callback params on load
+(function checkOAuthReturn() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('social_success')) showToast(`✅ ${params.get('social_success')} connected!`);
+  if (params.get('social_error'))   showToast(`❌ ${params.get('social_error')}`, true);
+  if (params.get('social_success') || params.get('social_error')) {
+    history.replaceState({}, '', '/admin');
+  }
+})();
+
 // ── Admin i18n ────────────────────────────────────────────────────
 const ADMIN_LANGS = {
   en: { flag:'🇺🇸', label:'English' },
@@ -1541,7 +2311,9 @@ const ADMIN_T = {
   tab_friends:   { en:'👥 Friends', es:'👥 Amigos', fr:'👥 Amis', pt:'👥 Amigos', yo:'👥 Àwọn Ọ̀rẹ́', zh:'👥 朋友' },
   tab_requests:  { en:'📋 Requests', es:'📋 Solicitudes', fr:'📋 Demandes', pt:'📋 Pedidos', yo:'📋 Àwọn Ìbéèrè', zh:'📋 请求' },
   tab_safety:    { en:'🚨 Safety', es:'🚨 Seguridad', fr:'🚨 Sécurité', pt:'🚨 Segurança', yo:'🚨 Ààbò', zh:'🚨 安全' },
-  tab_studio:    { en:'🎬 Studio', es:'🎬 Estudio', fr:'🎬 Studio', pt:'🎬 Estúdio', yo:'🎬 Ilé-iṣẹ́', zh:'🎬 工作室' },
+  tab_studio:    { en:'🎬 Studio',  es:'🎬 Estudio',  fr:'🎬 Studio',   pt:'🎬 Estúdio',  yo:'🎬 Ilé-iṣẹ́',  zh:'🎬 工作室' },
+  tab_editor:    { en:'✂️ Editor',  es:'✂️ Editor',   fr:'✂️ Éditeur',  pt:'✂️ Editor',   yo:'✂️ Ẹ̀rọ Ìṣàtúnṣe', zh:'✂️ 编辑器' },
+  tab_publish:   { en:'🚀 Publish', es:'🚀 Publicar', fr:'🚀 Publier',  pt:'🚀 Publicar', yo:'🚀 Ìkéde',    zh:'🚀 发布' },
 };
 
 let adminLang = localStorage.getItem('admin_lang') || 'es';
@@ -1561,7 +2333,7 @@ function applyAdminLang() {
   document.getElementById('btn-logout').textContent = at('btn_logout');
   // Tabs — match by order
   const tabs = document.querySelectorAll('.tab-btn');
-  const tabKeys = ['tab_pokemon','tab_gallery','tab_posts','tab_friends','tab_requests','tab_safety','tab_studio'];
+  const tabKeys = ['tab_pokemon','tab_gallery','tab_posts','tab_friends','tab_requests','tab_safety','tab_studio','tab_editor','tab_publish'];
   tabs.forEach((btn, i) => {
     if (!tabKeys[i]) return;
     // preserve badge spans
