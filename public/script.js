@@ -55,9 +55,13 @@ async function loadContent() {
 }
 
 function renderStats(data) {
-  document.getElementById('pokemon-count').textContent = (data.pokemon || []).length;
-  document.getElementById('gallery-count').textContent  = (data.gallery || []).length;
-  document.getElementById('post-count').textContent     = (data.posts   || []).length;
+  const pc = (data.pokemon || []).length;
+  const gc = (data.gallery || []).length;
+  const uc = (data.posts   || []).length;
+  document.getElementById('pokemon-count').textContent = pc;
+  document.getElementById('gallery-count').textContent = gc;
+  document.getElementById('post-count').textContent    = uc;
+  if (window.triggerCounters) window.triggerCounters(pc, gc, uc);
 }
 
 // ── Pokemon ───────────────────────────────────────────────────────
@@ -65,8 +69,8 @@ function renderPokemon(list) {
   const grid = document.getElementById('pokemon-grid');
   if (!list.length) {
     grid.innerHTML = `<div class="empty-state">
-      <div class="pokeball-empty"></div>
-      <p>No Pokemon yet… check back soon!</p>
+      <span class="empty-state-icon">🔍</span>
+      <p>No Pokemon caught yet…<br/>A wild one might appear!</p>
     </div>`;
     return;
   }
@@ -78,18 +82,41 @@ function renderPokemon(list) {
 }
 
 function pokemonCard(p) {
-  const type = (p.type || 'normal').toLowerCase();
+  const type  = (p.type || 'normal').toLowerCase();
   const emoji = typeEmoji[type] || '⭐';
   const imgTag = p.url
-    ? `<img class="poke-img" src="${p.url}" alt="${p.name}" />`
+    ? `<img class="poke-img" src="${p.url}" alt="${p.name}" loading="lazy" />`
     : `<div class="poke-img-placeholder">${emoji}</div>`;
+  // Simulated HP from level (capped 0–100)
+  const hp    = Math.min(100, 30 + (p.level || 1) * 2);
+  const hpCol = hp > 60 ? '#3CB371' : hp > 30 ? '#FFD700' : '#EE1515';
 
-  return `<div class="poke-card">
-    ${imgTag}
-    <div class="poke-name">${p.name.toUpperCase()}</div>
-    ${p.nickname ? `<div class="poke-nickname">"${p.nickname}"</div>` : ''}
-    <span class="poke-type type-${type}">${emoji} ${p.type}</span>
-    <div class="poke-level">Lv. ${p.level || 1}</div>
+  return `<div class="poke-card" data-type="${type}">
+    <div class="poke-card-inner">
+      <!-- FRONT -->
+      <div class="poke-card-front">
+        ${imgTag}
+        <div class="poke-name">${p.name.toUpperCase()}</div>
+        ${p.nickname ? `<div class="poke-nickname">"${p.nickname}"</div>` : ''}
+        <span class="poke-type type-${type}">${emoji} ${p.type}</span>
+        <div class="poke-level">LV.${p.level || 1}</div>
+        <div class="flip-hint">↻ flip</div>
+      </div>
+      <!-- BACK -->
+      <div class="poke-card-back">
+        <div class="card-back-title">${emoji} ${p.name.toUpperCase()}</div>
+        <div class="card-back-stat"><span>Type</span><strong>${p.type}</strong></div>
+        <div class="card-back-stat"><span>Level</span><strong>${p.level || 1}</strong></div>
+        ${p.nickname ? `<div class="card-back-stat"><span>Nickname</span><strong>"${p.nickname}"</strong></div>` : ''}
+        <div class="hp-bar-wrap">
+          <div class="hp-bar-label">HP</div>
+          <div class="hp-bar-track">
+            <div class="hp-bar-fill" style="width:${hp}%;background:linear-gradient(90deg,${hpCol},${hpCol}99);box-shadow:0 0 8px ${hpCol}66"></div>
+          </div>
+        </div>
+        <span class="poke-type type-${type}" style="margin-top:6px">${emoji} ${p.type}</span>
+      </div>
+    </div>
   </div>`;
 }
 
@@ -100,16 +127,26 @@ function renderGallery(list) {
     grid.innerHTML = `<div class="empty-state"><p>No photos yet!</p></div>`;
     return;
   }
-  grid.innerHTML = list.map(g => `
-    <div class="gallery-item" data-url="${g.url}" data-caption="${g.caption || ''}">
-      <img src="${g.url}" alt="${g.caption || 'Photo'}" loading="lazy" />
-      ${g.caption ? `<div class="gallery-caption">${g.caption}</div>` : ''}
-    </div>
-  `).join('');
+  const STICKERS = ['⚡','🔥','💧','🌿','⭐','🎮','🌟','✨','🏆','🎯'];
+  const ROTS     = [-3, -2, -1, 0, 1, 2, 3];
+  grid.innerHTML = list.map((g, i) => {
+    const rot     = ROTS[i % ROTS.length];
+    const sticker = STICKERS[i % STICKERS.length];
+    const caption = (g.caption || '').replace(/"/g, '&quot;');
+    return `
+    <div class="gallery-item" style="--rotate:${rot}deg;--scatter-r:${rot*2}deg"
+         data-url="${g.url}" data-caption="${caption}">
+      <div class="gallery-polaroid" data-sticker="${sticker}">
+        <img src="${g.url}" alt="${g.caption || 'Photo'}" loading="lazy" />
+        ${g.caption ? `<div class="gallery-caption">${g.caption}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
 
   grid.querySelectorAll('.gallery-item').forEach(el => {
     el.addEventListener('click', () => openLightbox(el.dataset.url, el.dataset.caption));
   });
+  if (window.applyPolaroidRotations) window.applyPolaroidRotations();
 }
 
 function openLightbox(url, caption) {
@@ -466,11 +503,20 @@ function appendMsg(role, text) {
   const messages = document.getElementById('agent-messages');
   const div = document.createElement('div');
   div.className = `agent-msg ${role}`;
-  const avatar = role === 'bot' ? '⚡' : (currentUser ? currentUser.avatar : '👤');
-  div.innerHTML = `
-    <span class="msg-avatar">${avatar}</span>
-    <div class="msg-bubble">${text}</div>
-  `;
+  const avatar = role.includes('bot') ? '🎓' : (currentUser ? currentUser.avatar : '👤');
+  if (role === 'bot typing') {
+    div.innerHTML = `
+      <span class="msg-avatar">${avatar}</span>
+      <div class="msg-bubble">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+      </div>`;
+  } else {
+    div.innerHTML = `
+      <span class="msg-avatar">${avatar}</span>
+      <div class="msg-bubble">${text}</div>`;
+  }
   messages.appendChild(div);
   scrollAgentToBottom();
   return div;

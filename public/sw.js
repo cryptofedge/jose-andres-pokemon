@@ -1,12 +1,13 @@
 // ── Jose Andres Pokemon World — Service Worker ────────────────────
 // Cache-first for static assets, network-first for API calls
-const CACHE  = 'pokemon-world-v2';
+const CACHE  = 'pokemon-world-v3';
 const STATIC = [
   '/',
   '/index.html',
   '/style.css',
-  '/script.js?v=8',
-  '/i18n.js?v=8',
+  '/script.js?v=9',
+  '/i18n.js?v=9',
+  '/animations.js?v=9',
   '/icon.svg',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap'

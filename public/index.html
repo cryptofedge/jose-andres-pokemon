@@ -29,6 +29,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
 </head>
 <body>
+  <!-- ── Background particle canvas ── -->
+  <canvas id="particles-canvas" aria-hidden="true"></canvas>
+  <!-- ── Pokeball burst canvas ── -->
+  <canvas id="burst-canvas" aria-hidden="true"></canvas>
+
   <!-- ── PWA INSTALL BANNER ── -->
   <div id="pwa-banner" class="pwa-banner hidden">
     <img src="/icon.svg" class="pwa-icon" alt="App icon" />
@@ -54,7 +59,7 @@
   <header>
     <div class="header-inner">
       <div class="logo">
-        <span class="pokeball-icon">⚪</span>
+        <div class="pokeball-icon" aria-hidden="true"></div>
         <div>
           <h1>Jose Andres</h1>
           <p>Pokemon Trainer · Age 6</p>
@@ -209,6 +214,19 @@
   <!-- ── HERO ── -->
   <section id="home" class="hero">
     <div class="hero-content">
+      <!-- Trainer card -->
+      <div class="hero-trainer-card">
+        <span class="tc-label">✦ TRAINER CARD ✦</span>
+        <div class="tc-trainer-row">
+          <div class="tc-avatar-big">⭐</div>
+          <div>
+            <div class="tc-name-big">Jose Andres</div>
+            <div class="tc-name-sub">Pokémon Trainer · Age 6</div>
+          </div>
+        </div>
+        <div class="tc-id-row">ID #000006 · GALAR REGION · PARTNER: PIKACHU ⚡</div>
+      </div>
+
       <div class="hero-badge" data-i18n="hero_badge">⚡ Pokemon Trainer</div>
       <div class="hero-name-wrap">
         <h1 class="hero-name">Jose Andres</h1>
@@ -216,9 +234,9 @@
       <h2><span data-i18n="hero_h2a">Welcome to My</span><br/><span class="yellow" data-i18n="hero_h2b">Pokemon World!</span></h2>
       <p data-i18n="hero_sub">I love Pokemon! Check out my team, my pics, and everything Pokemon!</p>
       <div class="hero-stats">
-        <div class="stat-card" id="stat-caught">
+        <div class="stat-card">
           <span class="stat-num" id="pokemon-count">0</span>
-          <span class="stat-label" data-i18n="stat_caught">Pokemon Caught</span>
+          <span class="stat-label" data-i18n="stat_caught">Pokemon</span>
         </div>
         <div class="stat-card">
           <span class="stat-num" id="gallery-count">0</span>
@@ -230,15 +248,21 @@
         </div>
       </div>
     </div>
+
+    <!-- 3D Interactive Pokéball -->
     <div class="hero-art">
-      <div class="pokeball-big">
-        <div class="pb-top"></div>
-        <div class="pb-band"><div class="pb-button"></div></div>
-        <div class="pb-bottom"></div>
+      <div class="pokeball-3d" id="hero-pokeball" title="Click me!">
+        <div class="pb3d-inner">
+          <div class="pb3d-top"></div>
+          <div class="pb3d-band"><div class="pb3d-btn"></div></div>
+          <div class="pb3d-bottom"></div>
+        </div>
       </div>
-      <div class="floating-pokemon">
-        <span>⚡</span><span>🔥</span><span>💧</span><span>🌿</span>
-      </div>
+      <!-- Orbiting type badges -->
+      <div class="type-badge-orbit fire"     aria-hidden="true">🔥</div>
+      <div class="type-badge-orbit water"    aria-hidden="true">💧</div>
+      <div class="type-badge-orbit electric" aria-hidden="true">⚡</div>
+      <div class="type-badge-orbit grass"    aria-hidden="true">🌿</div>
     </div>
   </section>
 
@@ -456,6 +480,11 @@
             <div class="agent-sub">FEDGE 2.O Pokemon AI · Eclat Universe</div>
           </div>
         </div>
+        <div class="agent-led-row" aria-hidden="true">
+          <div class="agent-led blue"></div>
+          <div class="agent-led yellow"></div>
+          <div class="agent-led green"></div>
+        </div>
         <button class="agent-close" onclick="toggleAgent()">✕</button>
       </div>
 
@@ -478,8 +507,9 @@
   <!-- Lang picker lives at body level to avoid sticky-header clipping -->
   <div id="lang-picker" class="lang-picker hidden"></div>
 
-  <script src="i18n.js?v=8"></script>
-  <script src="script.js?v=8"></script>
+  <script src="i18n.js?v=9"></script>
+  <script src="script.js?v=9"></script>
+  <script src="animations.js?v=9"></script>
 
   <!-- ── PWA: Service Worker + Install Prompt ── -->
   <script>
