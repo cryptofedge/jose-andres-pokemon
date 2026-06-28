@@ -9,7 +9,7 @@ const rateLimit   = require('express-rate-limit');
 const mongoose    = require('mongoose');
 const { scanText, scanObject } = require('./safety');
 const agent       = require('./agent');
-const { Pokemon, GalleryItem, Post, User, PendingRequest, ActivityLog, Report, SocialToken, PublishJob } = require('./models');
+const { Pokemon, GalleryItem, Post, User, PendingRequest, ActivityLog, Report, SocialToken, PublishJob, SiteConfig } = require('./models');
 const { google } = require('googleapis');
 const ffmpeg     = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
@@ -25,8 +25,18 @@ const YT_CLIENT_SECRET = process.env.YT_CLIENT_SECRET || '';
 const APP_URL          = process.env.APP_URL          || 'https://jose-andres-pokemon.onrender.com';
 const YT_REDIRECT      = `${APP_URL}/api/social/youtube/callback`;
 
-function getYTClient() {
-  return new google.auth.OAuth2(YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REDIRECT);
+async function getYTClient() {
+  let clientId     = YT_CLIENT_ID;
+  let clientSecret = YT_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    const [idDoc, secDoc] = await Promise.all([
+      SiteConfig.findOne({ key: 'YT_CLIENT_ID' }),
+      SiteConfig.findOne({ key: 'YT_CLIENT_SECRET' }),
+    ]);
+    clientId     = idDoc?.value     || '';
+    clientSecret = secDoc?.value    || '';
+  }
+  return new google.auth.OAuth2(clientId, clientSecret, YT_REDIRECT);
 }
 
 // ── MongoDB connect ───────────────────────────────────────────────────────────
@@ -664,10 +674,28 @@ app.delete('/api/admin/social/:platform', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Site Config (API keys stored in DB) ──────────────────────────────────────
+app.get('/api/admin/config', requireAdmin, async (req, res) => {
+  const docs = await SiteConfig.find({});
+  const cfg  = {};
+  docs.forEach(d => { cfg[d.key] = d.value; });
+  res.json(cfg);
+});
+
+app.post('/api/admin/config', requireAdmin, async (req, res) => {
+  const allowed = ['YT_CLIENT_ID', 'YT_CLIENT_SECRET', 'IG_CLIENT_ID', 'IG_CLIENT_SECRET', 'TT_CLIENT_KEY', 'TT_CLIENT_SECRET', 'FB_APP_ID', 'FB_APP_SECRET'];
+  for (const [key, value] of Object.entries(req.body)) {
+    if (!allowed.includes(key)) continue;
+    await SiteConfig.findOneAndUpdate({ key }, { key, value, updatedAt: new Date() }, { upsert: true });
+  }
+  res.json({ ok: true });
+});
+
 // ── YouTube OAuth ─────────────────────────────────────────────────────────────
-app.get('/api/social/youtube/connect', requireAdmin, (req, res) => {
-  if (!YT_CLIENT_ID) return res.status(400).json({ error: 'YT_CLIENT_ID not configured in env vars' });
-  const oauth2 = getYTClient();
+app.get('/api/social/youtube/connect', requireAdmin, async (req, res) => {
+  const oauth2 = await getYTClient();
+  const clientId = oauth2._clientId || oauth2.clientId_;
+  if (!clientId) return res.status(400).send('<h2>YouTube not configured yet.</h2><p>Go to the Publish tab → API Keys and enter your Google OAuth credentials first.</p><a href="/admin#tab-publish">← Back to Admin</a>');
   const url = oauth2.generateAuthUrl({
     access_type: 'offline',
     scope: ['https://www.googleapis.com/auth/youtube.upload', 'https://www.googleapis.com/auth/youtube.readonly'],
@@ -680,7 +708,7 @@ app.get('/api/social/youtube/callback', async (req, res) => {
   const { code, error } = req.query;
   if (error) return res.redirect('/admin?social_error=youtube_denied#tab-publish');
   try {
-    const oauth2 = getYTClient();
+    const oauth2 = await getYTClient();
     const { tokens } = await oauth2.getToken(code);
     oauth2.setCredentials(tokens);
 
@@ -755,7 +783,7 @@ app.post('/api/admin/publish', requireAdmin, async (req, res) => {
       const tokenDoc = await SocialToken.findOne({ platform: 'youtube' });
       if (!tokenDoc) throw new Error('YouTube not connected');
 
-      const oauth2 = getYTClient();
+      const oauth2 = await getYTClient();
       oauth2.setCredentials({
         access_token:  tokenDoc.accessToken,
         refresh_token: tokenDoc.refreshToken,

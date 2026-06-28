@@ -142,14 +142,18 @@
 
     /* ── Tabs ── */
     .tabs {
-      display: flex; gap: 6px;
+      display: flex; gap: 4px;
       margin-bottom: 32px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
       background: rgba(255,255,255,0.03);
       border: 1px solid rgba(255,255,255,0.07);
       border-radius: 999px;
       padding: 5px;
     }
+    .tabs::-webkit-scrollbar { display: none; }
     .tab-btn {
       padding: 9px 20px;
       border-radius: 999px;
@@ -1247,6 +1251,59 @@
               <div class="empty-msg">No publish jobs yet</div>
             </div>
           </div>
+
+          <!-- API Keys Setup -->
+          <div class="panel-card" style="margin-top:20px">
+            <h3 class="panel-title">🔑 API Keys Setup</h3>
+            <p style="font-size:13px;color:rgba(255,255,255,0.45);margin:0 0 16px">Enter your platform credentials here. These are stored securely in the database — you do NOT need access to Render.</p>
+
+            <div style="margin-bottom:18px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:8px">▶ YOUTUBE (GOOGLE OAUTH)</div>
+              <div class="form-row" style="grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px">
+                <div>
+                  <label class="form-label">Client ID</label>
+                  <input id="cfg-YT_CLIENT_ID" class="form-input" type="text" placeholder="123456789-xxx.apps.googleusercontent.com" />
+                </div>
+                <div>
+                  <label class="form-label">Client Secret</label>
+                  <input id="cfg-YT_CLIENT_SECRET" class="form-input" type="password" placeholder="GOCSPX-…" />
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:18px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:8px">📸 INSTAGRAM / FACEBOOK (META)</div>
+              <div class="form-row" style="grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label class="form-label">App ID</label>
+                  <input id="cfg-FB_APP_ID" class="form-input" type="text" placeholder="Facebook App ID" />
+                </div>
+                <div>
+                  <label class="form-label">App Secret</label>
+                  <input id="cfg-FB_APP_SECRET" class="form-input" type="password" placeholder="Facebook App Secret" />
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:20px">
+              <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:8px">🎵 TIKTOK</div>
+              <div class="form-row" style="grid-template-columns:1fr 1fr;gap:10px">
+                <div>
+                  <label class="form-label">Client Key</label>
+                  <input id="cfg-TT_CLIENT_KEY" class="form-input" type="text" placeholder="TikTok Client Key" />
+                </div>
+                <div>
+                  <label class="form-label">Client Secret</label>
+                  <input id="cfg-TT_CLIENT_SECRET" class="form-input" type="password" placeholder="TikTok Client Secret" />
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="saveApiKeys()">💾 Save Keys</button>
+              <div id="apikeys-saved" style="display:none;align-self:center;color:#34d399;font-size:13px">✅ Saved!</div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -1768,6 +1825,7 @@ function loadAll() {
   buildAvatarPicker();
   loadYouTube();
   loadSocialStatus();
+  loadApiKeys();
   checkOAuthReturn && checkOAuthReturn();
 }
 
@@ -2278,6 +2336,38 @@ async function loadPublishHistory() {
       </div>`;
     }).join('');
   } catch(e) { /* silent */ }
+}
+
+// ── API Keys ──────────────────────────────────────────────────────
+async function loadApiKeys() {
+  try {
+    const res = await fetch('/api/admin/config', { headers: { 'x-admin-password': adminPassword } });
+    const cfg = await res.json();
+    ['YT_CLIENT_ID','YT_CLIENT_SECRET','FB_APP_ID','FB_APP_SECRET','TT_CLIENT_KEY','TT_CLIENT_SECRET'].forEach(k => {
+      const el = document.getElementById('cfg-' + k);
+      if (el && cfg[k]) el.value = cfg[k];
+    });
+  } catch(e) { /* silent */ }
+}
+
+async function saveApiKeys() {
+  const keys = ['YT_CLIENT_ID','YT_CLIENT_SECRET','FB_APP_ID','FB_APP_SECRET','TT_CLIENT_KEY','TT_CLIENT_SECRET'];
+  const body = {};
+  keys.forEach(k => {
+    const el = document.getElementById('cfg-' + k);
+    if (el && el.value.trim()) body[k] = el.value.trim();
+  });
+  try {
+    await fetch('/api/admin/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify(body)
+    });
+    const saved = document.getElementById('apikeys-saved');
+    saved.style.display = 'block';
+    setTimeout(() => saved.style.display = 'none', 3000);
+    showToast('🔑 API keys saved!');
+  } catch(e) { showToast('Failed to save keys', true); }
 }
 
 // Check for OAuth callback params on load

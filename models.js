@@ -101,7 +101,14 @@ const PublishJobSchema = new mongoose.Schema({
   createdAt:   { type: Date, default: Date.now },
 });
 
+const SiteConfigSchema = new mongoose.Schema({
+  key:   { type: String, required: true, unique: true },
+  value: { type: String, default: '' },
+  updatedAt: { type: Date, default: Date.now },
+});
+
 module.exports = {
+  SiteConfig: mongoose.model('SiteConfig', SiteConfigSchema),
   Pokemon:       mongoose.model('Pokemon',  PokemonSchema),
   GalleryItem:   mongoose.model('Gallery',  GallerySchema),
   Post:          mongoose.model('Post',     PostSchema),
