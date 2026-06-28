@@ -90,6 +90,36 @@
       padding: 8px 16px; border-radius: 999px;
       cursor: pointer; font-size: 13px;
     }
+    .admin-header-right { display:flex; align-items:center; gap:10px; }
+    .lang-toggle-btn {
+      background: rgba(255,255,255,0.12);
+      border: 2px solid rgba(255,203,5,0.4);
+      color: #fff; padding: 6px 12px;
+      border-radius: 999px; cursor: pointer;
+      font-size: 13px; font-family: var(--font-body);
+      display: flex; align-items: center; gap: 6px;
+      position: relative;
+    }
+    .lang-toggle-btn:hover { border-color: var(--yellow); }
+    .admin-lang-picker {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: #1a1a2e; border: 2px solid var(--yellow);
+      border-radius: 12px; padding: 8px;
+      display: flex; flex-direction: column; gap: 4px;
+      min-width: 150px; z-index: 200;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+    .admin-lang-picker.hidden { display: none; }
+    .admin-lang-opt {
+      background: transparent; border: none;
+      color: rgba(255,255,255,0.7); padding: 8px 12px;
+      border-radius: 8px; cursor: pointer;
+      font-size: 14px; text-align: left;
+      font-family: var(--font-body);
+      transition: all 0.15s;
+    }
+    .admin-lang-opt:hover { background: rgba(255,255,255,0.08); color: #fff; }
+    .admin-lang-opt.active { background: var(--yellow); color: #000; font-weight: 700; }
 
     .admin-body {
       max-width: 960px;
@@ -442,7 +472,15 @@
 <div id="main-panel">
   <div class="admin-header">
     <h1>⚡ Admin Panel</h1>
-    <button class="logout-btn" onclick="logout()">Logout 👋</button>
+    <div class="admin-header-right">
+      <div style="position:relative">
+        <button class="lang-toggle-btn" id="admin-lang-btn" onclick="toggleAdminLang()">
+          <span id="admin-lang-flag">🇪🇸</span> <span id="admin-lang-label">Español</span>
+        </button>
+        <div class="admin-lang-picker hidden" id="admin-lang-picker"></div>
+      </div>
+      <button class="logout-btn" id="btn-logout" onclick="logout()">Logout 👋</button>
+    </div>
   </div>
 
   <div class="admin-body">
@@ -1371,6 +1409,95 @@ function copyText(elId) {
   const text = document.getElementById(elId).textContent;
   navigator.clipboard.writeText(text).then(() => showToast('📋 Copied to clipboard!'));
 }
+
+// ── Admin i18n ────────────────────────────────────────────────────
+const ADMIN_LANGS = {
+  en: { flag:'🇺🇸', label:'English' },
+  es: { flag:'🇪🇸', label:'Español' },
+  fr: { flag:'🇫🇷', label:'Français' },
+  pt: { flag:'🇧🇷', label:'Português' },
+  yo: { flag:'🇳🇬', label:'Yorùbá' },
+  zh: { flag:'🇨🇳', label:'中文' },
+};
+
+const ADMIN_T = {
+  // Header
+  panel_title:   { en:'⚡ Admin Panel', es:'⚡ Panel Admin', fr:'⚡ Panneau Admin', pt:'⚡ Painel Admin', yo:'⚡ Pánẹ́ẹ̀lì Admin', zh:'⚡ 管理面板' },
+  btn_logout:    { en:'Logout 👋', es:'Salir 👋', fr:'Déconnexion 👋', pt:'Sair 👋', yo:'Jáde 👋', zh:'退出 👋' },
+  // Tabs
+  tab_pokemon:   { en:'⚔️ Pokemon', es:'⚔️ Pokémon', fr:'⚔️ Pokémon', pt:'⚔️ Pokémon', yo:'⚔️ Pokémon', zh:'⚔️ 宝可梦' },
+  tab_gallery:   { en:'📸 Gallery', es:'📸 Galería', fr:'📸 Galerie', pt:'📸 Galeria', yo:'📸 Àwòrán', zh:'📸 相册' },
+  tab_posts:     { en:'📢 Posts', es:'📢 Noticias', fr:'📢 Publications', pt:'📢 Posts', yo:'📢 Ìfiránṣẹ́', zh:'📢 帖子' },
+  tab_friends:   { en:'👥 Friends', es:'👥 Amigos', fr:'👥 Amis', pt:'👥 Amigos', yo:'👥 Àwọn Ọ̀rẹ́', zh:'👥 朋友' },
+  tab_requests:  { en:'📋 Requests', es:'📋 Solicitudes', fr:'📋 Demandes', pt:'📋 Pedidos', yo:'📋 Àwọn Ìbéèrè', zh:'📋 请求' },
+  tab_safety:    { en:'🚨 Safety', es:'🚨 Seguridad', fr:'🚨 Sécurité', pt:'🚨 Segurança', yo:'🚨 Ààbò', zh:'🚨 安全' },
+  tab_studio:    { en:'🎬 Studio', es:'🎬 Estudio', fr:'🎬 Studio', pt:'🎬 Estúdio', yo:'🎬 Ilé-iṣẹ́', zh:'🎬 工作室' },
+};
+
+let adminLang = localStorage.getItem('admin_lang') || 'es';
+
+function at(key) {
+  const row = ADMIN_T[key];
+  return row ? (row[adminLang] || row['en']) : key;
+}
+
+function applyAdminLang() {
+  const info = ADMIN_LANGS[adminLang];
+  document.getElementById('admin-lang-flag').textContent  = info.flag;
+  document.getElementById('admin-lang-label').textContent = info.label;
+  // Header
+  const title = document.querySelector('.admin-header h1');
+  if (title) title.textContent = at('panel_title');
+  document.getElementById('btn-logout').textContent = at('btn_logout');
+  // Tabs — match by order
+  const tabs = document.querySelectorAll('.tab-btn');
+  const tabKeys = ['tab_pokemon','tab_gallery','tab_posts','tab_friends','tab_requests','tab_safety','tab_studio'];
+  tabs.forEach((btn, i) => {
+    if (!tabKeys[i]) return;
+    // preserve badge spans
+    const badge = btn.querySelector('.badge');
+    btn.textContent = at(tabKeys[i]);
+    if (badge) btn.appendChild(badge);
+  });
+  localStorage.setItem('admin_lang', adminLang);
+  // Update picker active state
+  document.querySelectorAll('.admin-lang-opt').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === adminLang);
+  });
+}
+
+function buildAdminLangPicker() {
+  const picker = document.getElementById('admin-lang-picker');
+  if (!picker) return;
+  picker.innerHTML = Object.entries(ADMIN_LANGS).map(([code, info]) =>
+    `<button class="admin-lang-opt${code === adminLang ? ' active' : ''}" data-lang="${code}" onclick="setAdminLang('${code}')">${info.flag} ${info.label}</button>`
+  ).join('');
+}
+
+function setAdminLang(lang) {
+  adminLang = lang;
+  applyAdminLang();
+  document.getElementById('admin-lang-picker').classList.add('hidden');
+}
+
+function toggleAdminLang() {
+  const picker = document.getElementById('admin-lang-picker');
+  picker.classList.toggle('hidden');
+}
+
+document.addEventListener('click', e => {
+  const picker = document.getElementById('admin-lang-picker');
+  const btn    = document.getElementById('admin-lang-btn');
+  if (picker && !picker.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+    picker.classList.add('hidden');
+  }
+});
+
+// Init lang on load
+document.addEventListener('DOMContentLoaded', () => {
+  buildAdminLangPicker();
+  applyAdminLang();
+});
 </script>
 </body>
 </html>
