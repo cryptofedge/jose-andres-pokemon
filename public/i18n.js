@@ -90,20 +90,39 @@ function applyLang() {
 function setLang(lang) {
   currentLang = lang;
   applyLang();
+  closeLangPicker();
+}
+
+function closeLangPicker() {
   const picker = document.getElementById('lang-picker');
   if (picker) picker.classList.add('hidden');
 }
 
 function toggleLangPicker() {
   const picker = document.getElementById('lang-picker');
-  if (picker) picker.classList.toggle('hidden');
+  const btn    = document.getElementById('lang-btn');
+  if (!picker || !btn) return;
+
+  if (!picker.classList.contains('hidden')) {
+    closeLangPicker();
+    return;
+  }
+
+  // Position picker below the globe button using fixed coords
+  const rect = btn.getBoundingClientRect();
+  picker.style.position = 'fixed';
+  picker.style.top  = (rect.bottom + 8) + 'px';
+  picker.style.right = (window.innerWidth - rect.right) + 'px';
+  picker.style.left  = 'auto';
+  picker.classList.remove('hidden');
 }
 
-// Close picker when clicking outside
+// Close picker when tapping/clicking outside
 document.addEventListener('click', e => {
   const picker = document.getElementById('lang-picker');
   const btn    = document.getElementById('lang-btn');
-  if (picker && !picker.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
-    picker.classList.add('hidden');
+  if (!picker || picker.classList.contains('hidden')) return;
+  if (!picker.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+    closeLangPicker();
   }
 });

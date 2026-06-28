@@ -51,7 +51,6 @@
         <!-- Language picker -->
         <div class="lang-wrap">
           <button id="lang-btn" class="lang-toggle" onclick="toggleLangPicker()" aria-label="Change language">🌐</button>
-          <div id="lang-picker" class="lang-picker hidden"></div>
         </div>
       </div>
     </div>
@@ -316,7 +315,10 @@
     </div>
   </div>
 
-  <script src="i18n.js?v=4"></script>
-  <script src="script.js?v=4"></script>
+  <!-- Lang picker lives at body level to avoid sticky-header clipping -->
+  <div id="lang-picker" class="lang-picker hidden"></div>
+
+  <script src="i18n.js?v=5"></script>
+  <script src="script.js?v=5"></script>
 </body>
 </html>

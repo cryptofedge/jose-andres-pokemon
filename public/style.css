@@ -854,7 +854,7 @@ footer p {
 }
 
 /* ── Language Picker ─────────────────────────────────────────────── */
-.lang-wrap { position: relative; }
+.lang-wrap { position: static; }
 .lang-toggle {
   background: rgba(255,255,255,0.12);
   border: none; color: #fff;
@@ -864,12 +864,12 @@ footer p {
 }
 .lang-toggle:hover { background: rgba(255,255,255,0.22); }
 .lang-picker {
-  position: absolute; top: calc(100% + 8px); right: 0;
+  /* position/top/right set by JS via getBoundingClientRect */
   background: #1a1a2e;
   border: 2px solid var(--yellow);
   border-radius: 12px;
   padding: 6px;
-  z-index: 500;
+  z-index: 9999;
   min-width: 160px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.5);
 }
