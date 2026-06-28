@@ -5,6 +5,30 @@ window.addEventListener('load', () => {
   }, 1200);
 });
 
+// ── Mobile nav ────────────────────────────────────────────────────
+const hamburger = document.getElementById('hamburger');
+const mainNav   = document.getElementById('main-nav');
+const overlay   = document.getElementById('nav-overlay');
+
+hamburger.addEventListener('click', () => {
+  const open = mainNav.classList.toggle('open');
+  hamburger.classList.toggle('open', open);
+  overlay.classList.toggle('show', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+});
+
+function closeNav() {
+  mainNav.classList.remove('open');
+  hamburger.classList.remove('open');
+  overlay.classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+// Close nav on resize back to desktop
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 680) closeNav();
+});
+
 // ── Type emoji map ────────────────────────────────────────────────
 const typeEmoji = {
   fire:'🔥', water:'💧', grass:'🌿', electric:'⚡', psychic:'🔮',

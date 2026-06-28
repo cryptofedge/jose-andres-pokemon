@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#E3350D" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>Jose's Admin Panel 🔑</title>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
   <style>
@@ -158,6 +161,39 @@
     }
     textarea { resize: vertical; min-height: 100px; }
     select option { background: #222; }
+
+    /* ── Mobile responsive ── */
+    @media (max-width: 600px) {
+      .admin-header { padding: 0 16px; }
+      .admin-header h1 { font-size: 8px; }
+      .admin-body { padding: 20px 14px; }
+
+      .tabs { gap: 6px; }
+      .tab-btn { padding: 9px 14px; font-size: 13px; flex: 1; text-align: center; }
+
+      .panel-card { padding: 20px 16px; }
+
+      .form-row { grid-template-columns: 1fr; gap: 12px; }
+
+      .btn { padding: 13px 20px; font-size: 14px; width: 100%; }
+      .btn.btn-sm { width: auto; padding: 8px 14px; font-size: 12px; }
+
+      .item-row { flex-wrap: wrap; gap: 10px; }
+      .item-row img { width: 48px; height: 48px; }
+      .item-row .item-name { font-size: 14px; }
+
+      .file-drop { padding: 22px 12px; }
+      .file-drop .drop-icon { font-size: 28px; }
+
+      #toast { width: 90vw; text-align: center; }
+
+      .login-box { padding: 32px 20px; }
+      .login-title { font-size: 9px; }
+    }
+
+    @media (max-width: 380px) {
+      .tab-btn { font-size: 11px; padding: 8px 8px; }
+    }
 
     .file-drop {
       border: 2px dashed rgba(255,203,5,0.4);
