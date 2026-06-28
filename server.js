@@ -566,6 +566,28 @@ app.delete('/api/admin/posts/:id', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Studio AI ─────────────────────────────────────────────────────────────────
+app.post('/api/studio/generate', requireAdmin, async (req, res) => {
+  const { prompt } = req.body;
+  if (!prompt) return res.status(400).json({ error: 'No prompt provided.' });
+
+  try {
+    const { chat } = require('./agent');
+    // Reuse agent's Anthropic client via a direct SDK call
+    const Anthropic = require('@anthropic-ai/sdk');
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const msg = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 800,
+      messages: [{ role: 'user', content: prompt }]
+    });
+    res.json({ result: msg.content[0].text });
+  } catch (e) {
+    console.error('Studio AI error:', e.message);
+    res.status(500).json({ error: 'AI generation failed: ' + e.message });
+  }
+});
+
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin', 'index.html')));
 
 app.listen(PORT, () => {

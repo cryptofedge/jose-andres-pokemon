@@ -219,6 +219,46 @@
     .tab-danger { border-color: rgba(227,53,13,0.5) !important; }
     .tab-danger.active { background: var(--red) !important; border-color: var(--red) !important; color: #fff !important; }
 
+    /* ── Studio tab ── */
+    .tab-studio { border-color: rgba(61,125,202,0.5) !important; }
+    .tab-studio.active { background: var(--blue) !important; border-color: var(--blue) !important; color: #fff !important; }
+
+    .studio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 20px; }
+    .studio-tool { display: flex; flex-direction: column; }
+    .studio-output {
+      margin-top: 14px; background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px; padding: 14px;
+      font-size: 13px; line-height: 1.7;
+      white-space: pre-wrap; color: #e0e0e0;
+      max-height: 280px; overflow-y: auto;
+    }
+    .copy-btn {
+      margin-top: 10px; background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #fff; padding: 6px 14px; border-radius: 8px;
+      cursor: pointer; font-size: 12px; transition: background 0.2s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.2); }
+    .studio-spinner { display: inline-block; animation: spin 1s linear infinite; margin-right: 6px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .yt-card {
+      margin-top: 14px; background: rgba(255,0,0,0.1);
+      border: 1px solid rgba(255,0,0,0.3);
+      border-radius: 10px; padding: 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .yt-icon { font-size: 28px; }
+    .yt-name { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+    .yt-link { color: var(--yellow); font-size: 13px; text-decoration: none; }
+    .yt-link:hover { text-decoration: underline; }
+    .btn-danger-sm {
+      background: rgba(227,53,13,0.2); border: 1px solid var(--red);
+      color: #ff6b6b; padding: 6px 12px; border-radius: 8px;
+      cursor: pointer; font-size: 12px;
+    }
+
     .alert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 16px; margin-bottom: 28px; }
     .alert-card {
       background: rgba(255,255,255,0.05);
@@ -405,6 +445,7 @@
       <button class="tab-btn" onclick="switchTab('tab-friends', this)">👥 Friends</button>
       <button class="tab-btn" onclick="switchTab('tab-requests', this)">📋 Requests <span id="req-badge" class="badge hidden"></span></button>
       <button class="tab-btn tab-danger" onclick="switchTab('tab-safety', this)">🚨 Safety <span id="safety-badge" class="badge hidden"></span></button>
+      <button class="tab-btn tab-studio" onclick="switchTab('tab-studio', this)">🎬 Studio</button>
     </div>
 
     <!-- ── TAB: Pokemon ── -->
@@ -594,6 +635,85 @@
       <div class="panel-card">
         <h3>📋 Activity Log (Last 100 events)</h3>
         <div id="sa-log"></div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Studio ── -->
+    <div id="tab-studio" class="tab-panel">
+
+      <!-- YouTube Connect -->
+      <div class="panel-card" style="margin-bottom:20px">
+        <h3 class="panel-title">🔗 YouTube Channel</h3>
+        <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:14px">Connect Jose Andres' YouTube channel to power the studio</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <input type="text" id="yt-url" class="form-input" placeholder="https://youtube.com/@JoseAndresPokemon" style="flex:1;min-width:200px" />
+          <button class="btn-primary" onclick="saveYouTube()">💾 Save</button>
+        </div>
+        <div id="yt-connected" class="yt-card hidden">
+          <span class="yt-icon">▶️</span>
+          <div>
+            <div class="yt-name" id="yt-display-name"></div>
+            <a class="yt-link" id="yt-link" href="#" target="_blank" rel="noopener">Open Channel →</a>
+          </div>
+          <button class="btn-danger-sm" onclick="disconnectYouTube()" style="margin-left:auto">Disconnect</button>
+        </div>
+      </div>
+
+      <!-- Studio Tools -->
+      <div class="studio-grid">
+
+        <!-- Video Ideas -->
+        <div class="panel-card studio-tool">
+          <h3 class="panel-title">💡 Video Ideas</h3>
+          <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:14px">Generate Pokemon video ideas for Jose Andres' channel</p>
+          <select id="ideas-theme" class="form-input" style="margin-bottom:10px">
+            <option value="general">General Pokemon</option>
+            <option value="unboxing">Card Unboxing</option>
+            <option value="battles">Pokemon Battles</option>
+            <option value="collection">Collection Tour</option>
+            <option value="review">Card Review</option>
+            <option value="challenge">Challenge / Game</option>
+          </select>
+          <button class="btn-primary" onclick="generateIdeas()" id="ideas-btn">⚡ Generate Ideas</button>
+          <div id="ideas-output" class="studio-output hidden"></div>
+        </div>
+
+        <!-- Caption Writer -->
+        <div class="panel-card studio-tool">
+          <h3 class="panel-title">📝 Caption Writer</h3>
+          <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:14px">Write a full YouTube description + hashtags</p>
+          <input type="text" id="caption-topic" class="form-input" placeholder="e.g. I pulled a Charizard EX!" style="margin-bottom:10px" />
+          <button class="btn-primary" onclick="generateCaption()" id="caption-btn">✍️ Write Caption</button>
+          <div id="caption-output" class="studio-output hidden">
+            <div id="caption-text"></div>
+            <button class="copy-btn" onclick="copyText('caption-text')">📋 Copy</button>
+          </div>
+        </div>
+
+        <!-- Thumbnail Studio -->
+        <div class="panel-card studio-tool">
+          <h3 class="panel-title">🖼️ Thumbnail Studio</h3>
+          <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:14px">Get a thumbnail concept: title, colors, layout</p>
+          <input type="text" id="thumb-topic" class="form-input" placeholder="e.g. Opening 50 Pokemon packs!" style="margin-bottom:10px" />
+          <button class="btn-primary" onclick="generateThumbnail()" id="thumb-btn">🎨 Design Thumbnail</button>
+          <div id="thumb-output" class="studio-output hidden">
+            <div id="thumb-text"></div>
+            <button class="copy-btn" onclick="copyText('thumb-text')">📋 Copy</button>
+          </div>
+        </div>
+
+        <!-- Title Generator -->
+        <div class="panel-card studio-tool">
+          <h3 class="panel-title">🏆 Title Generator</h3>
+          <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:14px">5 click-worthy titles for your next video</p>
+          <input type="text" id="title-topic" class="form-input" placeholder="e.g. My rarest Pokemon card" style="margin-bottom:10px" />
+          <button class="btn-primary" onclick="generateTitles()" id="title-btn">🏆 Generate Titles</button>
+          <div id="title-output" class="studio-output hidden">
+            <div id="title-text"></div>
+            <button class="copy-btn" onclick="copyText('title-text')">📋 Copy</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -1062,6 +1182,115 @@ function loadAll() {
   loadPokemon(); loadGallery(); loadPosts();
   loadFriends(); loadRequests(); loadSafety();
   buildAvatarPicker();
+  loadYouTube();
+}
+
+// ── Studio ────────────────────────────────────────────────────────
+function loadYouTube() {
+  const saved = localStorage.getItem('studio_yt_url');
+  const name  = localStorage.getItem('studio_yt_name');
+  if (saved) {
+    document.getElementById('yt-url').value = saved;
+    showYTCard(name || saved, saved);
+  }
+}
+
+function saveYouTube() {
+  const url = document.getElementById('yt-url').value.trim();
+  if (!url) return showToast('Paste your YouTube channel URL!', true);
+  const name = url.replace('https://','').replace('http://','').replace('www.','').split('/').filter(Boolean).pop() || url;
+  localStorage.setItem('studio_yt_url', url);
+  localStorage.setItem('studio_yt_name', '@' + name.replace('@',''));
+  showYTCard('@' + name.replace('@',''), url);
+  showToast('✅ YouTube channel saved!');
+}
+
+function showYTCard(name, url) {
+  document.getElementById('yt-display-name').textContent = name;
+  document.getElementById('yt-link').href = url;
+  document.getElementById('yt-connected').classList.remove('hidden');
+}
+
+function disconnectYouTube() {
+  localStorage.removeItem('studio_yt_url');
+  localStorage.removeItem('studio_yt_name');
+  document.getElementById('yt-url').value = '';
+  document.getElementById('yt-connected').classList.add('hidden');
+  showToast('Channel disconnected');
+}
+
+async function studioAI(prompt, outputId, btnId, extraEl) {
+  const btn = document.getElementById(btnId);
+  const out = document.getElementById(outputId);
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<span class="studio-spinner">⚡</span> Thinking…';
+  btn.disabled = true;
+  out.classList.add('hidden');
+
+  try {
+    const res = await fetch('/api/studio/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error');
+    if (extraEl) {
+      document.getElementById(extraEl).textContent = data.result;
+      out.classList.remove('hidden');
+    } else {
+      out.textContent = data.result;
+      out.classList.remove('hidden');
+    }
+  } catch(e) {
+    showToast(e.message, true);
+  } finally {
+    btn.innerHTML = origText;
+    btn.disabled = false;
+  }
+}
+
+function generateIdeas() {
+  const theme = document.getElementById('ideas-theme').value;
+  const themeLabels = { general:'general Pokemon', unboxing:'Pokemon card unboxing', battles:'Pokemon battles', collection:'collection tour', review:'Pokemon card review', challenge:'fun Pokemon challenge or game' };
+  const yt = localStorage.getItem('studio_yt_name') || 'Jose Andres Pokemon';
+  studioAI(
+    `Generate 6 creative YouTube video ideas for a 6-year-old Pokemon fan named Jose Andres. His channel is "${yt}". Theme: ${themeLabels[theme]}. For each idea give: a catchy title, a one-line description, and one tip to make it exciting. Keep it kid-friendly and fun! Format each idea clearly numbered.`,
+    'ideas-output', 'ideas-btn', null
+  );
+}
+
+function generateCaption() {
+  const topic = document.getElementById('caption-topic').value.trim();
+  if (!topic) return showToast('Enter a video topic first!', true);
+  const yt = localStorage.getItem('studio_yt_name') || 'Jose Andres Pokemon';
+  studioAI(
+    `Write a fun YouTube video description for a 6-year-old Pokemon fan named Jose Andres. Channel: "${yt}". Video topic: "${topic}". Include: an exciting opening line, 2-3 sentences describing the video, a call to action (like & subscribe), and 10 relevant hashtags. Keep the tone fun, kid-friendly, and energetic!`,
+    'caption-output', 'caption-btn', 'caption-text'
+  );
+}
+
+function generateThumbnail() {
+  const topic = document.getElementById('thumb-topic').value.trim();
+  if (!topic) return showToast('Enter a video topic first!', true);
+  studioAI(
+    `Design a YouTube thumbnail concept for a 6-year-old Pokemon fan's video about: "${topic}". Provide: 1) TITLE TEXT (big bold text for the thumbnail, max 5 words), 2) COLOR SCHEME (main colors and why), 3) LAYOUT (what goes where — background, character, text placement), 4) REACTION FACE tip (what expression Jose Andres should make). Make it eye-catching and kid-friendly!`,
+    'thumb-output', 'thumb-btn', 'thumb-text'
+  );
+}
+
+function generateTitles() {
+  const topic = document.getElementById('title-topic').value.trim();
+  if (!topic) return showToast('Enter a video topic first!', true);
+  studioAI(
+    `Write 5 click-worthy YouTube video titles for a 6-year-old Pokemon fan named Jose Andres. Video topic: "${topic}". Mix styles: one with a number, one with a question, one with ALL CAPS emotion, one with emojis, one storytelling style. Keep them kid-friendly and exciting!`,
+    'title-output', 'title-btn', 'title-text'
+  );
+}
+
+function copyText(elId) {
+  const text = document.getElementById(elId).textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('📋 Copied to clipboard!'));
 }
 </script>
 </body>
