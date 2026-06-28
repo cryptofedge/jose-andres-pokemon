@@ -161,10 +161,9 @@ nav a:hover { background: rgba(255,255,255,0.2); }
   font-size: clamp(36px, 8vw, 80px);
   color: var(--yellow);
   text-shadow:
-    0 0 10px rgba(255,203,5,0.9),
-    0 0 25px rgba(255,203,5,0.6),
-    0 0 50px rgba(255,203,5,0.3),
-    3px 3px 0px #b8860b;
+    0 0 6px rgba(255,203,5,0.4),
+    0 0 14px rgba(255,203,5,0.2),
+    2px 2px 0px #b8860b;
   line-height: 1.1;
   letter-spacing: 2px;
   margin: 0;
@@ -173,8 +172,8 @@ nav a:hover { background: rgba(255,255,255,0.2); }
 }
 
 @keyframes namePulse {
-  0%, 100% { text-shadow: 0 0 10px rgba(255,203,5,0.9), 0 0 25px rgba(255,203,5,0.6), 0 0 50px rgba(255,203,5,0.3), 3px 3px 0px #b8860b; }
-  50%       { text-shadow: 0 0 20px rgba(255,203,5,1),   0 0 45px rgba(255,203,5,0.8), 0 0 80px rgba(255,203,5,0.5), 3px 3px 0px #b8860b; }
+  0%, 100% { text-shadow: 0 0 6px rgba(255,203,5,0.4), 0 0 14px rgba(255,203,5,0.2), 2px 2px 0px #b8860b; }
+  50%       { text-shadow: 0 0 10px rgba(255,203,5,0.6), 0 0 22px rgba(255,203,5,0.3), 2px 2px 0px #b8860b; }
 }
 
 @media (max-width: 480px) {
