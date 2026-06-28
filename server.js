@@ -374,6 +374,18 @@ app.post('/api/admin/reports/:id/close', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+// Lock an account
+app.post('/api/admin/friends/:id/lock', requireAdmin, (req, res) => {
+  const db   = readUsers();
+  const user = db.users.find(u => u.id === Number(req.params.id));
+  if (!user) return res.status(404).json({ error: 'Not found' });
+  if (user.role === 'owner') return res.status(403).json({ error: 'Cannot lock the owner account.' });
+  user.locked = true;
+  writeUsers(db);
+  logActivity({ type: 'account_locked', userId: user.id, username: user.username, displayName: user.displayName, ip: 'admin', detail: 'Account locked by admin', severity: 'warning' });
+  res.json({ ok: true });
+});
+
 // Unlock an account
 app.post('/api/admin/friends/:id/unlock', requireAdmin, (req, res) => {
   const db   = readUsers();
@@ -498,9 +510,10 @@ app.put('/api/admin/friends/:id/password', requireAdmin, async (req, res) => {
 
 // ── Content ───────────────────────────────────────────────────────────────────
 app.post('/api/admin/gallery', requireAdmin, upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+  const url = req.file ? `/uploads/${req.file.filename}` : (req.body.url || '').trim();
+  if (!url) return res.status(400).json({ error: 'Provide an image file or URL.' });
   const data  = readData();
-  const entry = { id: Date.now(), url: `/uploads/${req.file.filename}`, caption: req.body.caption||'', createdAt: new Date().toISOString() };
+  const entry = { id: Date.now(), url, caption: req.body.caption||'', createdAt: new Date().toISOString() };
   data.gallery.push(entry);
   writeData(data);
   res.json(entry);
@@ -517,7 +530,8 @@ app.delete('/api/admin/gallery/:id', requireAdmin, (req, res) => {
 });
 app.post('/api/admin/pokemon', requireAdmin, upload.single('image'), (req, res) => {
   const data  = readData();
-  const entry = { id: Date.now(), name: req.body.name||'Unknown', type: req.body.type||'Normal', nickname: req.body.nickname||'', level: Number(req.body.level)||1, url: req.file?`/uploads/${req.file.filename}`:null, createdAt: new Date().toISOString() };
+  const imgUrl = req.file ? `/uploads/${req.file.filename}` : (req.body.url || '').trim() || null;
+  const entry = { id: Date.now(), name: req.body.name||'Unknown', type: req.body.type||'Normal', nickname: req.body.nickname||'', level: Number(req.body.level)||1, url: imgUrl, createdAt: new Date().toISOString() };
   data.pokemon.push(entry);
   writeData(data);
   res.json(entry);
