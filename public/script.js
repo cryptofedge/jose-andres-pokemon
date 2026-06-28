@@ -188,6 +188,7 @@ function setLoggedIn(user) {
   document.getElementById('hq-update-wrap')?.classList.remove('hidden');
   document.getElementById('hq-add-tip-btn-wrap')?.classList.remove('hidden');
   loadMyTrainerCard();
+  loadTips(); // re-render tips with this user's starred state
 }
 
 function logout() {

@@ -363,11 +363,11 @@ async function chat(sessionId, userMessage) {
         : "No information found on the internet for this query. Rely on your built-in knowledge.";
 
       // Second API call — give Claude the search result and get final answer
+      // No tools passed here so Claude is forced to reply with text (no loop risk)
       const followUp = await client.messages.create({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 400,
         system: systemPrompt,
-        tools: TOOLS,
         messages: [
           ...session.messages,
           { role: 'assistant', content: response.content },
