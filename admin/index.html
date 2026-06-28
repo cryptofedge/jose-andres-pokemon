@@ -219,6 +219,15 @@
     .tab-danger { border-color: rgba(227,53,13,0.5) !important; }
     .tab-danger.active { background: var(--red) !important; border-color: var(--red) !important; color: #fff !important; }
 
+    /* ── Post media upload ── */
+    .media-tab {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.6); padding: 6px 14px; border-radius: 8px;
+      cursor: pointer; font-size: 12px; font-family: var(--font-body); font-weight: 700;
+      transition: all 0.2s;
+    }
+    .media-tab.active { background: var(--yellow); border-color: var(--yellow); color: #1a1a2e; }
+
     /* ── Studio tab ── */
     .tab-studio { border-color: rgba(61,125,202,0.5) !important; }
     .tab-studio.active { background: var(--blue) !important; border-color: var(--blue) !important; color: #fff !important; }
@@ -590,7 +599,28 @@
             <textarea id="post-body" placeholder="Tell your friends what happened…"></textarea>
           </div>
         </div>
-        <button class="btn btn-primary" onclick="addPost()">Post Update 📢</button>
+        <!-- Media upload -->
+        <label style="display:block;margin-bottom:8px;font-weight:700;font-size:13px">📎 Attach Photo or Video <span style="color:rgba(255,255,255,0.4);font-weight:400">(optional)</span></label>
+        <div class="media-upload-tabs" style="display:flex;gap:8px;margin-bottom:10px">
+          <button class="media-tab active" id="mt-file" onclick="setMediaTab('file')">📁 Upload File</button>
+          <button class="media-tab" id="mt-url" onclick="setMediaTab('url')">🔗 Paste URL</button>
+        </div>
+        <div id="post-file-wrap">
+          <div class="upload-area" onclick="document.getElementById('post-media').click()" id="post-drop-zone">
+            <input type="file" id="post-media" accept="image/*,video/*" style="display:none" onchange="previewPostMedia(this)" />
+            <span id="post-media-icon" style="font-size:28px">📷</span>
+            <span id="post-media-name" style="font-size:13px;color:rgba(255,255,255,0.5)">Click to upload image or video</span>
+          </div>
+          <div id="post-media-preview" style="display:none;margin-top:10px;position:relative">
+            <img id="post-img-preview" style="max-width:100%;max-height:180px;border-radius:10px;display:none" />
+            <video id="post-vid-preview" style="max-width:100%;max-height:180px;border-radius:10px;display:none" controls></video>
+            <button onclick="clearPostMedia()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);border:none;color:#fff;border-radius:50%;width:24px;height:24px;cursor:pointer">✕</button>
+          </div>
+        </div>
+        <div id="post-url-wrap" style="display:none">
+          <input type="text" id="post-media-url" class="form-input" placeholder="https://… (image or YouTube/video URL)" />
+        </div>
+        <button class="btn btn-primary" style="margin-top:16px" onclick="addPost()">Post Update 📢</button>
       </div>
 
       <div class="panel-card">
@@ -903,20 +933,69 @@ async function loadGallery() {
 }
 
 // ── Posts ─────────────────────────────────────────────────────────
+function setMediaTab(tab) {
+  document.getElementById('post-file-wrap').style.display = tab === 'file' ? '' : 'none';
+  document.getElementById('post-url-wrap').style.display  = tab === 'url'  ? '' : 'none';
+  document.getElementById('mt-file').classList.toggle('active', tab === 'file');
+  document.getElementById('mt-url').classList.toggle('active',  tab === 'url');
+}
+
+function previewPostMedia(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('post-media-icon').textContent = file.type.startsWith('video/') ? '🎬' : '🖼️';
+  document.getElementById('post-media-name').textContent = file.name;
+  const preview = document.getElementById('post-media-preview');
+  const img = document.getElementById('post-img-preview');
+  const vid = document.getElementById('post-vid-preview');
+  const url = URL.createObjectURL(file);
+  if (file.type.startsWith('video/')) {
+    img.style.display = 'none'; vid.src = url; vid.style.display = 'block';
+  } else {
+    vid.style.display = 'none'; img.src = url; img.style.display = 'block';
+  }
+  preview.style.display = 'block';
+}
+
+function clearPostMedia() {
+  document.getElementById('post-media').value = '';
+  document.getElementById('post-media-icon').textContent = '📷';
+  document.getElementById('post-media-name').textContent = 'Click to upload image or video';
+  document.getElementById('post-media-preview').style.display = 'none';
+  document.getElementById('post-img-preview').src = '';
+  document.getElementById('post-vid-preview').src = '';
+}
+
 async function addPost() {
   const title = document.getElementById('post-title').value.trim();
   const body  = document.getElementById('post-body').value.trim();
   if (!title || !body) return showToast('Need a title and message!', true);
 
+  const fd = new FormData();
+  fd.append('title', title);
+  fd.append('body', body);
+
+  // Check active tab
+  const urlTab = document.getElementById('post-url-wrap').style.display !== 'none';
+  if (urlTab) {
+    const mediaUrl = document.getElementById('post-media-url').value.trim();
+    if (mediaUrl) fd.append('mediaUrl', mediaUrl);
+  } else {
+    const file = document.getElementById('post-media').files[0];
+    if (file) fd.append('media', file);
+  }
+
   const res = await fetch('/api/admin/posts', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
-    body: JSON.stringify({ title, body })
+    headers: { 'x-admin-password': adminPassword },
+    body: fd
   });
   if (res.ok) {
     showToast('📢 Post published!');
     document.getElementById('post-title').value = '';
     document.getElementById('post-body').value = '';
+    document.getElementById('post-media-url').value = '';
+    clearPostMedia();
     loadPosts();
   } else {
     showToast('Something went wrong!', true);

@@ -550,11 +550,20 @@ app.delete('/api/admin/pokemon/:id', requireAdmin, (req, res) => {
   writeData(data);
   res.json({ ok: true });
 });
-app.post('/api/admin/posts', requireAdmin, (req, res) => {
+app.post('/api/admin/posts', requireAdmin, upload.single('media'), (req, res) => {
   const scan = scanObject({ title: req.body.title||'', body: req.body.body||'' });
   if (!scan.safe) return res.status(400).json({ error: 'Post contains inappropriate content.' });
   const data  = readData();
-  const entry = { id: Date.now(), title: req.body.title||'New Post', body: req.body.body||'', createdAt: new Date().toISOString() };
+  let mediaUrl = null;
+  let mediaType = null;
+  if (req.file) {
+    mediaUrl  = `/uploads/${req.file.filename}`;
+    mediaType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
+  } else if (req.body.mediaUrl) {
+    mediaUrl  = req.body.mediaUrl.trim();
+    mediaType = /\.(mp4|webm|mov|avi)$/i.test(mediaUrl) || mediaUrl.includes('youtube') || mediaUrl.includes('youtu.be') ? 'video' : 'image';
+  }
+  const entry = { id: Date.now(), title: req.body.title||'New Post', body: req.body.body||'', mediaUrl, mediaType, createdAt: new Date().toISOString() };
   data.posts.unshift(entry);
   writeData(data);
   res.json(entry);

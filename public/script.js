@@ -133,13 +133,28 @@ function renderPosts(list) {
     container.innerHTML = `<div class="empty-state"><p>No updates yet!</p></div>`;
     return;
   }
-  container.innerHTML = list.map(post => `
+  container.innerHTML = list.map(post => {
+    let mediaHtml = '';
+    if (post.mediaUrl) {
+      if (post.mediaType === 'video') {
+        const ytMatch = post.mediaUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&?/]+)/);
+        if (ytMatch) {
+          mediaHtml = `<div class="post-media"><iframe src="https://www.youtube.com/embed/${ytMatch[1]}" frameborder="0" allowfullscreen style="width:100%;aspect-ratio:16/9;border-radius:12px;margin-top:12px"></iframe></div>`;
+        } else {
+          mediaHtml = `<div class="post-media"><video src="${post.mediaUrl}" controls style="width:100%;max-height:320px;border-radius:12px;margin-top:12px"></video></div>`;
+        }
+      } else {
+        mediaHtml = `<div class="post-media"><img src="${post.mediaUrl}" alt="${post.title}" style="width:100%;max-height:320px;object-fit:cover;border-radius:12px;margin-top:12px;cursor:pointer" onclick="openLightbox(this.src,'${post.title}')" /></div>`;
+      }
+    }
+    return `
     <div class="post-card fade-in">
       <div class="post-date">${new Date(post.createdAt).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' })}</div>
       <div class="post-title">${post.title}</div>
       <div class="post-body">${post.body}</div>
-    </div>
-  `).join('');
+      ${mediaHtml}
+    </div>`;
+  }).join('');
 }
 
 // ── Auth state ────────────────────────────────────────────────────
