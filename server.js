@@ -7,6 +7,7 @@ const bcrypt      = require('bcryptjs');
 const jwt         = require('jsonwebtoken');
 const rateLimit   = require('express-rate-limit');
 const { scanText, scanObject } = require('./safety');
+const agent       = require('./agent');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -271,6 +272,35 @@ app.post('/api/auth/request-account', async (req, res) => {
   });
 
   res.json({ ok: true });
+});
+
+// ── PIKAFEDGE Agent ───────────────────────────────────────────────────────────
+const agentLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 20,
+  message: { error: 'Too many messages! Take a breath and try again in a minute. 🌬️' }
+});
+
+app.post('/api/agent/chat', agentLimiter, async (req, res) => {
+  const { message, sessionId } = req.body;
+  if (!message || !sessionId)
+    return res.status(400).json({ error: 'Need a message and sessionId.' });
+  if (message.length > 500)
+    return res.status(400).json({ error: 'Message too long!' });
+
+  if (!process.env.ANTHROPIC_API_KEY)
+    return res.status(503).json({ error: 'Agent not configured — set ANTHROPIC_API_KEY.' });
+
+  try {
+    const result = await agent.chat(sessionId, message);
+    if (result.flagged) {
+      logActivity({ type: 'safety_flag', ip: getIP(req), detail: `Agent blocked unsafe message: "${message.slice(0,80)}"`, severity: 'warning' });
+    }
+    res.json({ reply: result.reply });
+  } catch (err) {
+    console.error('Agent error:', err.message);
+    res.status(500).json({ error: 'PIKAFEDGE is resting! Try again in a moment. 😴' });
+  }
 });
 
 // ── Report button ─────────────────────────────────────────────────────────────

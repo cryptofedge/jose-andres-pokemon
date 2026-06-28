@@ -253,6 +253,41 @@
     <p class="footer-safety">This site is monitored by Jose's family. Stay safe! 💛</p>
   </footer>
 
+  <!-- ── PIKAFEDGE AGENT ── -->
+  <div id="agent-widget">
+    <button id="agent-toggle" onclick="toggleAgent()" aria-label="Open Pokemon AI">
+      <span id="agent-toggle-icon">⚡</span>
+      <span class="agent-label">Ask PIKAFEDGE</span>
+    </button>
+
+    <div id="agent-panel" class="hidden">
+      <div class="agent-header">
+        <div class="agent-title">
+          <span>⚡</span>
+          <div>
+            <div class="agent-name">PIKAFEDGE</div>
+            <div class="agent-sub">FEDGE 2.O Pokemon AI · Eclat Universe</div>
+          </div>
+        </div>
+        <button class="agent-close" onclick="toggleAgent()">✕</button>
+      </div>
+
+      <div id="agent-messages" class="agent-messages">
+        <div class="agent-msg bot">
+          <span class="msg-avatar">⚡</span>
+          <div class="msg-bubble">Pika pika! Hi! I'm PIKAFEDGE, your Pokemon buddy! ⚡ What Pokemon question do you have?</div>
+        </div>
+      </div>
+
+      <div class="agent-input-row">
+        <input type="text" id="agent-input" placeholder="Ask about Pokemon…" maxlength="300"
+          onkeydown="if(event.key==='Enter')sendAgentMsg()" />
+        <button onclick="sendAgentMsg()" id="agent-send">⚡</button>
+      </div>
+      <div class="agent-brand">Powered by <strong>FEDGE 2.O</strong> · Eclat Universe</div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>

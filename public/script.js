@@ -368,5 +368,70 @@ async function submitReport() {
   }
 }
 
+// ── PIKAFEDGE Agent ───────────────────────────────────────────────
+const agentSessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+let agentOpen = false;
+
+function toggleAgent() {
+  agentOpen = !agentOpen;
+  document.getElementById('agent-panel').classList.toggle('hidden', !agentOpen);
+  document.getElementById('agent-toggle-icon').textContent = agentOpen ? '✕' : '⚡';
+  if (agentOpen) {
+    setTimeout(() => document.getElementById('agent-input').focus(), 100);
+    scrollAgentToBottom();
+  }
+}
+
+function scrollAgentToBottom() {
+  const el = document.getElementById('agent-messages');
+  el.scrollTop = el.scrollHeight;
+}
+
+function appendMsg(role, text) {
+  const messages = document.getElementById('agent-messages');
+  const div = document.createElement('div');
+  div.className = `agent-msg ${role}`;
+  const avatar = role === 'bot' ? '⚡' : (currentUser ? currentUser.avatar : '👤');
+  div.innerHTML = `
+    <span class="msg-avatar">${avatar}</span>
+    <div class="msg-bubble">${text}</div>
+  `;
+  messages.appendChild(div);
+  scrollAgentToBottom();
+  return div;
+}
+
+async function sendAgentMsg() {
+  const input = document.getElementById('agent-input');
+  const msg   = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  appendMsg('user', msg);
+
+  // Typing indicator
+  const typing = appendMsg('bot typing', '');
+  typing.classList.add('typing');
+
+  try {
+    const res  = await fetch('/api/agent/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: msg, sessionId: agentSessionId })
+    });
+    const data = await res.json();
+    typing.remove();
+
+    if (!res.ok) {
+      appendMsg('bot', data.error || 'Oops! Try again! ⚡');
+    } else {
+      appendMsg('bot', data.reply);
+    }
+  } catch {
+    typing.remove();
+    appendMsg('bot', "Pika! I can't connect right now. Try again! ⚡");
+  }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────
 loadContent();
