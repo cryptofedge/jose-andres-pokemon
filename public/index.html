@@ -4,13 +4,42 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Jose Andres' Pokemon World ⚡</title>
+
+  <!-- PWA core -->
+  <link rel="manifest" href="/manifest.json" />
   <meta name="theme-color" content="#E3350D" />
+
+  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PokemonWorld" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
+  <link rel="apple-touch-startup-image" href="/icon.svg" />
+
+  <!-- Android / general -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="application-name" content="PokemonWorld" />
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+
+  <!-- SEO / sharing -->
+  <meta name="description" content="Jose Andres' Pokemon trainer site — team, gallery, Trainer HQ leaderboard, and Profesor Justin AI!" />
+  <meta name="color-scheme" content="dark" />
+
   <link rel="stylesheet" href="style.css" />
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
 </head>
 <body>
+  <!-- ── PWA INSTALL BANNER ── -->
+  <div id="pwa-banner" class="pwa-banner hidden">
+    <img src="/icon.svg" class="pwa-icon" alt="App icon" />
+    <div class="pwa-text">
+      <strong>Add to Home Screen!</strong>
+      <span>Play like a real app ⚡</span>
+    </div>
+    <button id="pwa-install-btn" class="pwa-install-btn">Install</button>
+    <button id="pwa-dismiss-btn" class="pwa-dismiss-btn" aria-label="Dismiss">✕</button>
+  </div>
+
   <!-- ── POKEBALL LOADER ── -->
   <div id="loader">
     <div class="pokeball-loader">
@@ -449,7 +478,59 @@
   <!-- Lang picker lives at body level to avoid sticky-header clipping -->
   <div id="lang-picker" class="lang-picker hidden"></div>
 
-  <script src="i18n.js?v=7"></script>
-  <script src="script.js?v=7"></script>
+  <script src="i18n.js?v=8"></script>
+  <script src="script.js?v=8"></script>
+
+  <!-- ── PWA: Service Worker + Install Prompt ── -->
+  <script>
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+
+    // Install prompt (Android / Chrome)
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Only show banner if user hasn't dismissed it before
+      if (!localStorage.getItem('pwa_dismissed')) {
+        setTimeout(() => {
+          document.getElementById('pwa-banner').classList.remove('hidden');
+        }, 3000);
+      }
+    });
+
+    document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+      document.getElementById('pwa-banner').classList.add('hidden');
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
+    });
+
+    document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+      document.getElementById('pwa-banner').classList.add('hidden');
+      localStorage.setItem('pwa_dismissed', '1');
+    });
+
+    // iOS: show banner with instructions (no beforeinstallprompt on Safari)
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    const isInStandalone = window.navigator.standalone === true;
+    if (isIOS && !isInStandalone && !localStorage.getItem('pwa_dismissed')) {
+      setTimeout(() => {
+        const banner = document.getElementById('pwa-banner');
+        const btn    = document.getElementById('pwa-install-btn');
+        btn.textContent = '↑ Tap Share → Add to Home';
+        btn.style.fontSize = '10px';
+        btn.style.padding  = '8px 10px';
+        btn.onclick = () => banner.classList.add('hidden');
+        banner.classList.remove('hidden');
+      }, 3000);
+    }
+  </script>
 </body>
 </html>
