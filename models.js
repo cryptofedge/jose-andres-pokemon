@@ -107,6 +107,38 @@ const SiteConfigSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+// ── Trainer HQ ────────────────────────────────────────────────────────────────
+const TrainerProgressSchema = new mongoose.Schema({
+  userId:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
+  username:     { type: String, required: true },
+  displayName:  { type: String, required: true },
+  avatar:       { type: String, default: '🎮' },
+  color:        { type: String, default: '#3D7DCA' },
+  game:         { type: String, default: '' },       // e.g. "Pokemon Sword", "Pokemon Violet"
+  console:      { type: String, default: '' },       // e.g. "Nintendo Switch", "3DS", "Mobile"
+  badges:       { type: Number, default: 0 },        // gym badges / trials earned
+  caught:       { type: Number, default: 0 },        // pokemon caught
+  hours:        { type: Number, default: 0 },        // hours played
+  favoriteType: { type: String, default: '' },       // favorite pokemon type
+  starterName:  { type: String, default: '' },       // starter pokemon name
+  statusMsg:    { type: String, default: '' },       // short custom status
+  updatedAt:    { type: Date, default: Date.now },
+});
+
+const TipSchema = new mongoose.Schema({
+  userId:      { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  username:    { type: String, required: true },
+  displayName: { type: String, required: true },
+  avatar:      { type: String, default: '🎮' },
+  color:       { type: String, default: '#3D7DCA' },
+  game:        { type: String, default: 'Any Game' },
+  title:       { type: String, required: true },
+  body:        { type: String, required: true },
+  stars:       { type: Number, default: 0 },
+  starredBy:   [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  createdAt:   { type: Date, default: Date.now },
+});
+
 module.exports = {
   SiteConfig: mongoose.model('SiteConfig', SiteConfigSchema),
   Pokemon:       mongoose.model('Pokemon',  PokemonSchema),
@@ -116,6 +148,8 @@ module.exports = {
   PendingRequest:mongoose.model('Pending',  PendingSchema),
   ActivityLog:   mongoose.model('Activity', ActivitySchema),
   Report:        mongoose.model('Report',   ReportSchema),
-  SocialToken:   mongoose.model('SocialToken',  SocialTokenSchema),
-  PublishJob:    mongoose.model('PublishJob',   PublishJobSchema),
+  SocialToken:      mongoose.model('SocialToken',      SocialTokenSchema),
+  PublishJob:       mongoose.model('PublishJob',       PublishJobSchema),
+  TrainerProgress:  mongoose.model('TrainerProgress',  TrainerProgressSchema),
+  Tip:              mongoose.model('Tip',              TipSchema),
 };

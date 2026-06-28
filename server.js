@@ -9,7 +9,7 @@ const rateLimit   = require('express-rate-limit');
 const mongoose    = require('mongoose');
 const { scanText, scanObject } = require('./safety');
 const agent       = require('./agent');
-const { Pokemon, GalleryItem, Post, User, PendingRequest, ActivityLog, Report, SocialToken, PublishJob, SiteConfig } = require('./models');
+const { Pokemon, GalleryItem, Post, User, PendingRequest, ActivityLog, Report, SocialToken, PublishJob, SiteConfig, TrainerProgress, Tip } = require('./models');
 const { google } = require('googleapis');
 const ffmpeg     = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
@@ -181,6 +181,19 @@ function requireToken(req, res, next) {
   catch { res.status(401).json({ error: 'Session expired — please log in again!' }); }
 }
 
+// requireUser — like requireToken but also fetches the full DB user document
+async function requireUser(req, res, next) {
+  const token = (req.headers.authorization || '').replace('Bearer ', '');
+  if (!token) return res.status(401).json({ error: 'Login required!' });
+  let decoded;
+  try { decoded = jwt.verify(token, JWT_SECRET); }
+  catch { return res.status(401).json({ error: 'Session expired — please log in again!' }); }
+  const user = await User.findById(decoded.id).lean();
+  if (!user) return res.status(401).json({ error: 'User not found.' });
+  req.user = user;
+  next();
+}
+
 function getIP(req) {
   return req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
 }
@@ -341,6 +354,96 @@ app.post('/api/report', async (req, res) => {
   await Report.create({ reporterName: reporterName||'Anonymous', description, aboutUser: aboutUser||'', ip });
   await logActivity({ type: 'report', username: reporterName||'anonymous', ip, detail: `Report about: "${aboutUser||'unknown'}" — ${description.slice(0,80)}`, severity: 'danger' });
   res.json({ ok: true });
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  TRAINER HQ — leaderboard, trainer cards, tips & tricks
+// ══════════════════════════════════════════════════════════════════════════════
+
+// GET leaderboard + trainer cards (public)
+app.get('/api/hq/leaderboard', async (req, res) => {
+  const trainers = await TrainerProgress.find().sort({ badges: -1, caught: -1, hours: -1 });
+  res.json(trainers);
+});
+
+// GET current user's trainer card (requires login)
+app.get('/api/hq/me', requireUser, async (req, res) => {
+  const card = await TrainerProgress.findOne({ userId: req.user._id });
+  res.json(card || null);
+});
+
+// UPSERT current user's trainer card
+app.post('/api/hq/me', requireUser, async (req, res) => {
+  const { game, console: cons, badges, caught, hours, favoriteType, starterName, statusMsg } = req.body;
+  if (badges > 99 || caught > 9999 || hours > 9999)
+    return res.status(400).json({ error: 'Those numbers seem too big!' });
+
+  const card = await TrainerProgress.findOneAndUpdate(
+    { userId: req.user._id },
+    {
+      userId: req.user._id,
+      username: req.user.username,
+      displayName: req.user.displayName,
+      avatar: req.user.avatar,
+      color: req.user.color,
+      game: (game || '').slice(0, 60),
+      console: (cons || '').slice(0, 40),
+      badges:  Math.max(0, Number(badges)  || 0),
+      caught:  Math.max(0, Number(caught)  || 0),
+      hours:   Math.max(0, Number(hours)   || 0),
+      favoriteType: (favoriteType || '').slice(0, 30),
+      starterName:  (starterName  || '').slice(0, 30),
+      statusMsg:    (statusMsg    || '').slice(0, 100),
+      updatedAt: new Date(),
+    },
+    { upsert: true, new: true }
+  );
+  res.json(card);
+});
+
+// GET all tips (public) — sorted by stars desc, newest as tiebreak
+app.get('/api/hq/tips', async (req, res) => {
+  const tips = await Tip.find().sort({ stars: -1, createdAt: -1 }).limit(50);
+  res.json(tips);
+});
+
+// POST a new tip (requires login)
+app.post('/api/hq/tips', requireUser, async (req, res) => {
+  const { game, title, body } = req.body;
+  if (!title || !body) return res.status(400).json({ error: 'Need a title and tip!' });
+  if (title.length > 80 || body.length > 500)
+    return res.status(400).json({ error: 'Title or tip is too long!' });
+
+  const tip = await Tip.create({
+    userId: req.user._id,
+    username: req.user.username,
+    displayName: req.user.displayName,
+    avatar: req.user.avatar,
+    color: req.user.color,
+    game: (game || 'Any Game').slice(0, 60),
+    title: title.trim(),
+    body:  body.trim(),
+  });
+  res.json(tip);
+});
+
+// POST star/unstar a tip (toggle)
+app.post('/api/hq/tips/:id/star', requireUser, async (req, res) => {
+  const tip = await Tip.findById(req.params.id);
+  if (!tip) return res.status(404).json({ error: 'Tip not found' });
+
+  const uid = req.user._id.toString();
+  const alreadyStarred = tip.starredBy.map(id => id.toString()).includes(uid);
+
+  if (alreadyStarred) {
+    tip.starredBy = tip.starredBy.filter(id => id.toString() !== uid);
+    tip.stars = Math.max(0, tip.stars - 1);
+  } else {
+    tip.starredBy.push(req.user._id);
+    tip.stars += 1;
+  }
+  await tip.save();
+  res.json({ stars: tip.stars, starred: !alreadyStarred });
 });
 
 // ══════════════════════════════════════════════════════════════════════════════

@@ -35,10 +35,11 @@
         <span></span><span></span><span></span>
       </button>
       <nav id="main-nav">
-        <a href="#home"    onclick="closeNav()" data-i18n="nav_home">Home</a>
-        <a href="#pokemon" onclick="closeNav()" data-i18n="nav_team">My Team</a>
-        <a href="#gallery" onclick="closeNav()" data-i18n="nav_gallery">Gallery</a>
-        <a href="#posts"   onclick="closeNav()" data-i18n="nav_updates">Updates</a>
+        <a href="#home"       onclick="closeNav()" data-i18n="nav_home">Home</a>
+        <a href="#pokemon"    onclick="closeNav()" data-i18n="nav_team">My Team</a>
+        <a href="#gallery"    onclick="closeNav()" data-i18n="nav_gallery">Gallery</a>
+        <a href="#trainer-hq" onclick="closeNav()">🏆 Trainer HQ</a>
+        <a href="#posts"      onclick="closeNav()" data-i18n="nav_updates">Updates</a>
       </nav>
       <div id="header-user" class="header-user hidden">
         <span id="header-avatar"></span>
@@ -245,6 +246,136 @@
     </div>
   </section>
 
+  <!-- ── TRAINER HQ ── -->
+  <section id="trainer-hq" class="section alt-bg">
+    <div class="section-header">
+      <h2>🏆 Trainer HQ</h2>
+      <p>Track your game, climb the leaderboard, share tips!</p>
+    </div>
+
+    <!-- Update My Card button (logged-in only) -->
+    <div id="hq-update-wrap" class="hq-update-wrap hidden">
+      <button class="hq-update-btn" onclick="openHQModal()">✏️ Update My Trainer Card</button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="hq-tabs">
+      <button class="hq-tab active" onclick="switchHQTab('leaderboard', this)">🏅 Leaderboard</button>
+      <button class="hq-tab" onclick="switchHQTab('tips', this)">💡 Tips &amp; Tricks</button>
+    </div>
+
+    <!-- LEADERBOARD TAB -->
+    <div id="hq-tab-leaderboard" class="hq-tab-content">
+      <div id="leaderboard-list" class="leaderboard-list">
+        <div class="empty-state"><p>No trainers yet — be the first! 🎮</p></div>
+      </div>
+    </div>
+
+    <!-- TIPS TAB -->
+    <div id="hq-tab-tips" class="hq-tab-content hidden">
+      <div id="hq-tip-form-wrap" class="hq-tip-form-wrap hidden">
+        <div class="hq-tip-form">
+          <h3>Share a Tip! 💡</h3>
+          <select id="tip-game" class="hq-select">
+            <option value="Any Game">Any Game</option>
+            <option value="Pokemon Sword">⚔️ Pokemon Sword</option>
+            <option value="Pokemon Shield">🛡️ Pokemon Shield</option>
+            <option value="Pokemon Scarlet">🟥 Pokemon Scarlet</option>
+            <option value="Pokemon Violet">🟣 Pokemon Violet</option>
+            <option value="Pokemon Legends: Arceus">✨ Legends: Arceus</option>
+            <option value="Pokemon Brilliant Diamond">💎 Brilliant Diamond</option>
+            <option value="Pokemon Shining Pearl">🌸 Shining Pearl</option>
+            <option value="Pokemon Sun">☀️ Pokemon Sun</option>
+            <option value="Pokemon Moon">🌙 Pokemon Moon</option>
+            <option value="Pokemon GO">📱 Pokemon GO</option>
+            <option value="Pokemon TCG Pocket">🃏 TCG Pocket</option>
+            <option value="Other">🎮 Other</option>
+          </select>
+          <input id="tip-title" class="hq-input" type="text" placeholder="Tip title (e.g. How to find shiny Pokemon!)" maxlength="80" />
+          <textarea id="tip-body" class="hq-textarea" placeholder="Share your tip here! Max 500 characters." maxlength="500"></textarea>
+          <div class="hq-tip-form-btns">
+            <button class="hq-submit-btn" onclick="submitTip()">Post Tip ⚡</button>
+            <button class="hq-cancel-btn" onclick="cancelTip()">Cancel</button>
+          </div>
+          <p id="tip-error" class="modal-error hidden"></p>
+        </div>
+      </div>
+      <div id="hq-add-tip-btn-wrap" class="hq-add-tip-btn-wrap hidden">
+        <button class="hq-update-btn" onclick="showTipForm()">💡 Share a Tip!</button>
+      </div>
+      <div id="tips-list" class="tips-list">
+        <div class="empty-state"><p>No tips yet — be the first to share! 💡</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TRAINER CARD MODAL ── -->
+  <div id="modal-hq" class="modal hidden" style="max-width:480px">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">🎮</div>
+    <h2 class="modal-title">My Trainer Card</h2>
+    <p class="modal-sub">Update your game progress for the leaderboard!</p>
+
+    <label class="modal-label">Game you're playing</label>
+    <select id="hq-game" class="modal-input" style="font-family:inherit">
+      <option value="">— Pick a game —</option>
+      <option value="Pokemon Sword">⚔️ Pokemon Sword (Switch)</option>
+      <option value="Pokemon Shield">🛡️ Pokemon Shield (Switch)</option>
+      <option value="Pokemon Scarlet">🟥 Pokemon Scarlet (Switch)</option>
+      <option value="Pokemon Violet">🟣 Pokemon Violet (Switch)</option>
+      <option value="Pokemon Legends: Arceus">✨ Legends: Arceus (Switch)</option>
+      <option value="Pokemon Brilliant Diamond">💎 Brilliant Diamond (Switch)</option>
+      <option value="Pokemon Shining Pearl">🌸 Shining Pearl (Switch)</option>
+      <option value="Pokemon Let's Go Pikachu">⚡ Let's Go Pikachu (Switch)</option>
+      <option value="Pokemon Let's Go Eevee">🌸 Let's Go Eevee (Switch)</option>
+      <option value="Pokemon Sun">☀️ Pokemon Sun (3DS)</option>
+      <option value="Pokemon Moon">🌙 Pokemon Moon (3DS)</option>
+      <option value="Pokemon X">🔵 Pokemon X (3DS)</option>
+      <option value="Pokemon Y">🔴 Pokemon Y (3DS)</option>
+      <option value="Pokemon Omega Ruby">🔴 Omega Ruby (3DS)</option>
+      <option value="Pokemon Alpha Sapphire">🔵 Alpha Sapphire (3DS)</option>
+      <option value="Pokemon HeartGold">🌟 HeartGold (DS)</option>
+      <option value="Pokemon SoulSilver">✨ SoulSilver (DS)</option>
+      <option value="Pokemon Diamond">💎 Diamond (DS)</option>
+      <option value="Pokemon Pearl">🌸 Pearl (DS)</option>
+      <option value="Pokemon Platinum">⚪ Platinum (DS)</option>
+      <option value="Pokemon Black">⚫ Black (DS)</option>
+      <option value="Pokemon White">⚪ White (DS)</option>
+      <option value="Pokemon GO">📱 Pokemon GO (Mobile)</option>
+      <option value="Pokemon TCG Pocket">🃏 TCG Pocket (Mobile)</option>
+      <option value="Other">🎮 Other</option>
+    </select>
+
+    <label class="modal-label">Gym Badges / Trials earned</label>
+    <input id="hq-badges" class="modal-input" type="number" min="0" max="99" placeholder="e.g. 4" />
+
+    <label class="modal-label">Pokemon caught / registered</label>
+    <input id="hq-caught" class="modal-input" type="number" min="0" max="9999" placeholder="e.g. 87" />
+
+    <label class="modal-label">Hours played</label>
+    <input id="hq-hours" class="modal-input" type="number" min="0" max="9999" placeholder="e.g. 12" />
+
+    <label class="modal-label">Starter Pokemon name</label>
+    <input id="hq-starter" class="modal-input" type="text" placeholder="e.g. Grookey" maxlength="30" />
+
+    <label class="modal-label">Favorite Pokemon type</label>
+    <select id="hq-favtype" class="modal-input" style="font-family:inherit">
+      <option value="">— Pick a type —</option>
+      <option>🔥 Fire</option><option>💧 Water</option><option>🌿 Grass</option>
+      <option>⚡ Electric</option><option>🧊 Ice</option><option>👊 Fighting</option>
+      <option>☠️ Poison</option><option>🏔️ Ground</option><option>🕊️ Flying</option>
+      <option>🔮 Psychic</option><option>🐛 Bug</option><option>🪨 Rock</option>
+      <option>👻 Ghost</option><option>🐉 Dragon</option><option>🌑 Dark</option>
+      <option>⚙️ Steel</option><option>✨ Fairy</option><option>⭐ Normal</option>
+    </select>
+
+    <label class="modal-label">Status message (optional)</label>
+    <input id="hq-status" class="modal-input" type="text" placeholder="e.g. Hunting shinies! 🌟" maxlength="100" />
+
+    <p id="hq-error" class="modal-error hidden"></p>
+    <button class="modal-btn" onclick="saveTrainerCard()">Save Trainer Card 🏆</button>
+  </div>
+
   <!-- ── UPDATES ── -->
   <section id="posts" class="section">
     <div class="section-header">
@@ -318,7 +449,7 @@
   <!-- Lang picker lives at body level to avoid sticky-header clipping -->
   <div id="lang-picker" class="lang-picker hidden"></div>
 
-  <script src="i18n.js?v=6"></script>
-  <script src="script.js?v=6"></script>
+  <script src="i18n.js?v=7"></script>
+  <script src="script.js?v=7"></script>
 </body>
 </html>

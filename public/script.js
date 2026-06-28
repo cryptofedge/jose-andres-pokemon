@@ -185,6 +185,9 @@ function setLoggedIn(user) {
   document.getElementById('header-name').textContent   = user.displayName;
   document.getElementById('header-user').classList.remove('hidden');
   document.getElementById('btn-login').classList.add('hidden');
+  document.getElementById('hq-update-wrap')?.classList.remove('hidden');
+  document.getElementById('hq-add-tip-btn-wrap')?.classList.remove('hidden');
+  loadMyTrainerCard();
 }
 
 function logout() {
@@ -192,21 +195,23 @@ function logout() {
   currentUser = null;
   document.getElementById('header-user').classList.add('hidden');
   document.getElementById('btn-login').classList.remove('hidden');
+  document.getElementById('hq-update-wrap')?.classList.add('hidden');
+  document.getElementById('hq-add-tip-btn-wrap')?.classList.add('hidden');
 }
 
 // ── Modal system ──────────────────────────────────────────────────
 function openModal(type) {
   document.getElementById('modal-overlay').classList.remove('hidden');
-  ['login','signup','report','invite'].forEach(t => {
-    document.getElementById(`modal-${t}`).classList.add('hidden');
+  ['login','signup','report','invite','hq'].forEach(t => {
+    document.getElementById(`modal-${t}`)?.classList.add('hidden');
   });
-  document.getElementById(`modal-${type}`).classList.remove('hidden');
+  document.getElementById(`modal-${type}`)?.classList.remove('hidden');
   document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
   document.getElementById('modal-overlay').classList.add('hidden');
-  ['login','signup','report','invite'].forEach(t => document.getElementById(`modal-${t}`).classList.add('hidden'));
+  ['login','signup','report','invite','hq'].forEach(t => document.getElementById(`modal-${t}`)?.classList.add('hidden'));
   document.body.style.overflow = '';
 }
 
@@ -502,7 +507,205 @@ async function sendAgentMsg() {
   }
 }
 
+// ══════════════════════════════════════════════════════════════════
+// ── TRAINER HQ ────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════
+
+const CONSOLE_ICONS = {
+  'Switch': '🎮', 'Nintendo Switch': '🎮',
+  '3DS': '🎮', 'DS': '🎮', 'GBA': '🎮',
+  'Mobile': '📱', 'Other': '🕹️'
+};
+
+function switchHQTab(tab, btn) {
+  document.querySelectorAll('.hq-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('hq-tab-leaderboard').classList.toggle('hidden', tab !== 'leaderboard');
+  document.getElementById('hq-tab-tips').classList.toggle('hidden', tab !== 'tips');
+}
+
+// ── Leaderboard ────────────────────────────────────────────────────
+async function loadLeaderboard() {
+  try {
+    const res  = await fetch('/api/hq/leaderboard');
+    const list = await res.json();
+    const el   = document.getElementById('leaderboard-list');
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state"><p>No trainers yet — be the first! 🎮</p></div>';
+      return;
+    }
+    const rankLabels = ['🥇','🥈','🥉'];
+    const rankClass  = ['gold','silver','bronze'];
+    el.innerHTML = list.map((t, i) => {
+      const rank = i < 3 ? `<span class="trainer-rank ${rankClass[i]}">${rankLabels[i]}</span>`
+                         : `<span class="trainer-rank">#${i+1}</span>`;
+      const game = t.game || 'No game set';
+      const status = t.statusMsg ? `<div class="trainer-status">"${t.statusMsg}"</div>` : '';
+      const starter = t.starterName ? ` · Starter: ${t.starterName}` : '';
+      const favtype = t.favoriteType ? ` · Fav: ${t.favoriteType}` : '';
+      return `
+        <div class="trainer-card${i < 3 ? ' rank-'+(i+1) : ''}">
+          ${rank}
+          <div class="trainer-info">
+            <div class="trainer-name-row">
+              <span class="trainer-avatar">${t.avatar || '🎮'}</span>
+              <span class="trainer-name" style="color:${t.color||'#fff'}">${t.displayName}</span>
+            </div>
+            <div class="trainer-game">🎮 ${game}${starter}${favtype}</div>
+            ${status}
+          </div>
+          <div class="trainer-stats">
+            <div class="trainer-stat">🏅 <strong>${t.badges}</strong> badges</div>
+            <div class="trainer-stat">🔴 <strong>${t.caught}</strong> caught</div>
+            <div class="trainer-stat">⏱ <strong>${t.hours}</strong> hrs</div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch { /* silent */ }
+}
+
+// ── My trainer card — pre-fill modal ──────────────────────────────
+async function loadMyTrainerCard() {
+  try {
+    const res = await fetch('/api/hq/me', { headers: { Authorization: `Bearer ${getToken()}` } });
+    if (!res.ok) return;
+    const card = await res.json();
+    if (!card) return;
+    document.getElementById('hq-game').value    = card.game || '';
+    document.getElementById('hq-badges').value  = card.badges ?? '';
+    document.getElementById('hq-caught').value  = card.caught ?? '';
+    document.getElementById('hq-hours').value   = card.hours  ?? '';
+    document.getElementById('hq-starter').value = card.starterName || '';
+    document.getElementById('hq-favtype').value = card.favoriteType || '';
+    document.getElementById('hq-status').value  = card.statusMsg || '';
+  } catch { /* silent */ }
+}
+
+function openHQModal() { openModal('hq'); }
+
+async function saveTrainerCard() {
+  const errEl = document.getElementById('hq-error');
+  errEl.classList.add('hidden');
+  const body = {
+    game:        document.getElementById('hq-game').value,
+    badges:      document.getElementById('hq-badges').value,
+    caught:      document.getElementById('hq-caught').value,
+    hours:       document.getElementById('hq-hours').value,
+    starterName: document.getElementById('hq-starter').value.trim(),
+    favoriteType:document.getElementById('hq-favtype').value,
+    statusMsg:   document.getElementById('hq-status').value.trim(),
+  };
+  try {
+    const res = await fetch('/api/hq/me', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error; errEl.classList.remove('hidden'); return; }
+    closeModal();
+    loadLeaderboard();
+  } catch {
+    errEl.textContent = 'Could not save. Try again!';
+    errEl.classList.remove('hidden');
+  }
+}
+
+// ── Tips ──────────────────────────────────────────────────────────
+let myStarredTips = new Set();
+
+async function loadTips() {
+  try {
+    const res  = await fetch('/api/hq/tips');
+    const tips = await res.json();
+    const el   = document.getElementById('tips-list');
+    if (!tips.length) {
+      el.innerHTML = '<div class="empty-state"><p>No tips yet — be the first to share! 💡</p></div>';
+      return;
+    }
+    const uid = currentUser?.id;
+    el.innerHTML = tips.map(t => {
+      const starred = uid && t.starredBy?.includes(uid);
+      if (starred) myStarredTips.add(t._id);
+      return `
+        <div class="tip-card" id="tip-${t._id}">
+          <div class="tip-header">
+            <span class="tip-avatar">${t.avatar || '🎮'}</span>
+            <div class="tip-meta">
+              <div class="tip-author" style="color:${t.color||'#fff'}">${t.displayName}</div>
+              <div class="tip-game">${t.game}</div>
+            </div>
+            <button class="tip-star-btn${starred?' starred':''}" onclick="starTip('${t._id}', this)">
+              ⭐ ${t.stars}
+            </button>
+          </div>
+          <div class="tip-title">${t.title}</div>
+          <div class="tip-body">${t.body}</div>
+        </div>`;
+    }).join('');
+  } catch { /* silent */ }
+}
+
+async function starTip(id, btn) {
+  if (!currentUser) { openModal('login'); return; }
+  try {
+    const res  = await fetch(`/api/hq/tips/${id}/star`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${getToken()}` }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      btn.textContent = `⭐ ${data.stars}`;
+      btn.classList.toggle('starred', data.starred);
+    }
+  } catch { /* silent */ }
+}
+
+function showTipForm() {
+  document.getElementById('hq-tip-form-wrap').classList.remove('hidden');
+  document.getElementById('hq-add-tip-btn-wrap').classList.add('hidden');
+}
+
+function cancelTip() {
+  document.getElementById('hq-tip-form-wrap').classList.add('hidden');
+  document.getElementById('hq-add-tip-btn-wrap').classList.remove('hidden');
+  document.getElementById('tip-error').classList.add('hidden');
+}
+
+async function submitTip() {
+  const errEl = document.getElementById('tip-error');
+  errEl.classList.add('hidden');
+  const body = {
+    game:  document.getElementById('tip-game').value,
+    title: document.getElementById('tip-title').value.trim(),
+    body:  document.getElementById('tip-body').value.trim(),
+  };
+  if (!body.title || !body.body) {
+    errEl.textContent = 'Please fill in the title and tip!';
+    errEl.classList.remove('hidden');
+    return;
+  }
+  try {
+    const res = await fetch('/api/hq/tips', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error; errEl.classList.remove('hidden'); return; }
+    document.getElementById('tip-title').value = '';
+    document.getElementById('tip-body').value  = '';
+    cancelTip();
+    loadTips();
+  } catch {
+    errEl.textContent = 'Could not post tip. Try again!';
+    errEl.classList.remove('hidden');
+  }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────
 buildLangPicker();
 applyLang();
 loadContent();
+loadLeaderboard();
+loadTips();

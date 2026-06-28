@@ -1,3 +1,116 @@
 {
-  "facts": []
+  "facts": [
+    {
+      "id": 1,
+      "topic": "Pokemon Sword - Galar Region",
+      "keywords": ["sword", "espada", "galar", "switch", "gym", "badges"],
+      "fact": "Pokemon Sword (Pokemon Espada) is a Nintendo Switch game from 2019 set in the Galar region (inspired by Great Britain). You collect 8 Gym Badges. The Champion is Leon, who uses Charizard and was undefeated for years. The main legendary is Zacian, a wolf Pokemon that holds a sword in its mouth. Dynamax and Gigantamax make Pokemon giant in battle! Starters: Grookey (Grass monkey), Scorbunny (Fire rabbit), Sobble (Water lizard).",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "topic": "Pokemon Shield - Galar Region",
+      "keywords": ["shield", "escudo", "galar", "switch", "zamazenta"],
+      "fact": "Pokemon Shield (Pokemon Escudo) is the partner game to Sword, also on Nintendo Switch (2019). The main legendary is Zamazenta, a wolf Pokemon with a shield-like mane. You battle the same 8 Galar Gym Leaders. The story involves stopping Eternatus, a giant Poison/Dragon legendary that caused the Darkest Day. Both games have the Wild Area — an open-world zone with roaming Pokemon and Max Raid Battles with friends online!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "topic": "Galar Gym Leaders",
+      "keywords": ["gym", "leader", "galar", "sword", "shield", "badge", "espada"],
+      "fact": "Galar Gym Leaders in order: 1) Milo (Grass, Turffield) 2) Nessa (Water, Hulbury) 3) Kabu (Fire, Motostoke) 4) Bea/Allister (Fighting/Ghost — different per game!) 5) Opal (Fairy, Ballonlea) 6) Gordie/Melony (Rock/Ice — different per game!) 7) Piers (Dark, Spikemuth) 8) Raihan (Dragon, Hammerlocke). After beating all 8, face the Champion Cup at Wyndon Stadium!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 4,
+      "topic": "Galar New Pokemon",
+      "keywords": ["galar", "new", "pokemon", "sword", "shield", "wooloo", "corviknight", "dragapult"],
+      "fact": "Cool new Galar Pokemon: Wooloo (fluffy sheep, Normal), Corviknight (giant steel crow taxi!), Gossifleur→Eldegoss (Cotton Pokemon), Cramorant (bird that swallows fish), Polteageist (ghost in a teapot!), Alcremie (cream cake Pokemon with MANY forms!), Dragapult (stealth bomber Dragon/Ghost — shoots its Dreepy babies like missiles!), Eternatus (giant skeletal dragon), Urshifu (fighting bear with two styles). Also Galarian regional forms: Galarian Ponyta is FAIRY type and PINK!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "topic": "Nintendo Switch Pokemon Games",
+      "keywords": ["switch", "nintendo", "games", "console", "list"],
+      "fact": "All Pokemon games on Nintendo Switch: Pokemon Let's Go Pikachu & Eevee (2018, Kanto remake with motion controls), Pokemon Sword & Shield (2019, Galar), Pokemon Mystery Dungeon Rescue Team DX (2020 remake), New Pokemon Snap (2021, photo game!), Pokemon Brilliant Diamond & Shining Pearl (2021, Sinnoh remakes), Pokemon Legends: Arceus (2022, open-world ancient Sinnoh), Pokemon Scarlet & Violet (2022, Paldea, first true open-world main series), Pokemon Sleep (2023, mobile-linked), Pokemon TCG Pocket (2024, mobile card game).",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "topic": "Nintendo 3DS Pokemon Games",
+      "keywords": ["3ds", "ds", "handheld", "games", "console", "list", "xy", "sun", "moon"],
+      "fact": "Pokemon games on Nintendo 3DS: Pokemon X & Y (2013, Kalos, first 3D graphics!), Pokemon Omega Ruby & Alpha Sapphire (2014, Hoenn remakes), Pokemon Sun & Moon (2016, Alola, no gyms — Island Trials instead!), Pokemon Ultra Sun & Ultra Moon (2017, expanded Alola story), Pokemon Mystery Dungeon Gates to Infinity and Super Mystery Dungeon, Pokemon Rumble Blast, Pokemon Shuffle (free-to-play puzzle), Pokken Tournament DX (also on Switch). The 3DS is a dual-screen handheld — bottom screen is touchscreen.",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 7,
+      "topic": "Nintendo DS Pokemon Games",
+      "keywords": ["ds", "nds", "lite", "dsi", "games", "console", "diamond", "pearl", "platinum"],
+      "fact": "Pokemon games on Nintendo DS (original dual-screen): Pokemon Diamond, Pearl, Platinum (2006-2009, Sinnoh), Pokemon HeartGold & SoulSilver (2009, Johto remakes — widely considered the BEST Pokemon games ever! Pokemon follow you on screen!), Pokemon Black & White (2010, Unova), Pokemon Black 2 & White 2 (2012, sequel games!), Pokemon Mystery Dungeon Explorers of Time/Darkness/Sky. The DS had backwards compatibility with GBA games too!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 8,
+      "topic": "Game Boy Advance Pokemon Games",
+      "keywords": ["gba", "gameboy", "advance", "ruby", "sapphire", "emerald", "firered", "leafgreen"],
+      "fact": "Pokemon games on Game Boy Advance (GBA): Pokemon Ruby & Sapphire (2002, Hoenn), Pokemon FireRed & LeafGreen (2004, Kanto remakes with new features), Pokemon Emerald (2004, best version of Hoenn with Battle Frontier!), Pokemon Mystery Dungeon Red Rescue Team. The GBA was a horizontal handheld with a bright screen. You could trade Pokemon between GBA games using a link cable!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 9,
+      "topic": "Game Boy & Game Boy Color Pokemon Games",
+      "keywords": ["gameboy", "gb", "gbc", "color", "red", "blue", "yellow", "gold", "silver", "crystal", "original"],
+      "fact": "The ORIGINAL Pokemon games! Game Boy: Pokemon Red & Blue (1996/1998, the very first — 151 Pokemon!), Pokemon Yellow (play as Pikachu who follows you, just like the anime!). Game Boy Color: Pokemon Gold & Silver (1999, Johto + you can go back to Kanto — 2 regions!), Pokemon Crystal (first game with a female player option and animated Pokemon sprites!). Pokemon Trading Card Game video game (1998, GBC). These classics started it all!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 10,
+      "topic": "Mobile Pokemon Games",
+      "keywords": ["mobile", "phone", "iphone", "android", "go", "masters", "unite", "sleep", "pocket"],
+      "fact": "Pokemon mobile games: Pokemon GO (2016, catch real-world Pokemon with GPS and camera — most popular mobile game ever!), Pokemon Masters EX (team up with famous trainers like Red, Blue, Misty!), Pokemon UNITE (5v5 team battle MOBA), Pokemon Cafe ReMix (cooking/puzzle game), Pokemon Sleep (your sleep helps Pokemon — rare Pokemon appear when you sleep well!), Pokemon TCG Pocket (2024, digital card game with stunning card art). Pokemon GO has special events, raids, and Community Days every month!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 11,
+      "topic": "Pokemon Scarlet and Violet - Paldea",
+      "keywords": ["scarlet", "violet", "escarlata", "purpura", "paldea", "switch", "open world", "terastal"],
+      "fact": "Pokemon Scarlet & Violet (2022) on Nintendo Switch — first truly open-world Pokemon games! Set in Paldea (inspired by Spain/Portugal). Three stories: Victory Road (8 gyms + Top Champion Geeta), Path of Legends (fight Titan Pokemon), and Starfall Street (Team Star). Starters: Sprigatito (Grass cat), Fuecoco (Fire croc), Quaxly (Water duck). New mechanic: Terastallizing changes a Pokemon's type to its Tera Type and makes it crystal-shiny! Legendaries: Koraidon (Scarlet, ancient) and Miraidon (Violet, futuristic robot-dragon).",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 12,
+      "topic": "Pokemon Legends Arceus",
+      "keywords": ["legends", "arceus", "hisui", "ancient", "switch", "open world", "historical"],
+      "fact": "Pokemon Legends: Arceus (2022, Nintendo Switch) — you travel back in time to ancient Sinnoh (called Hisui region)! You're on a mission to complete the first-ever Pokedex. Pokemon roam freely and you can sneak up and throw Pokeballs WITHOUT battling first! New Pokemon: Wyrdeer, Kleavor, Ursaluna, Basculegion, Sneasler, Overqwil. New forms for old Pokemon: Hisuian Growlithe (Fire/Rock), Hisuian Voltorb (Electric/Grass, wooden!), Hisuian Zoroark (Normal/Ghost, terrifying!). The Noble Pokemon are huge bosses you fight with balms!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 13,
+      "topic": "Pokemon GO tips for beginners",
+      "keywords": ["go", "pokemon go", "tips", "beginner", "catch", "raid", "community day"],
+      "fact": "Pokemon GO tips: 1) Spin Pokestops every day for a Daily Streak bonus! 2) Community Days happen monthly — one Pokemon spawns everywhere for 3 hours with a special move! 3) Use Curved Throws for more XP and better catch rates. 4) Lucky Eggs double XP for 30 minutes — save them for evolving lots of Pokemon at once! 5) Raid Battles let you fight and catch rare/legendary Pokemon — bring friends! 6) Buddy Pokemon walks with you and earns Candy. 7) Power up your Pokemon with Stardust and Candy. 8) Trade with friends to get Lucky Pokemon which cost less Stardust to power up!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    },
+    {
+      "id": 14,
+      "topic": "Dynamax and Gigantamax explained",
+      "keywords": ["dynamax", "gigantamax", "gmax", "sword", "shield", "raid", "big"],
+      "fact": "Dynamax is a mechanic in Pokemon Sword & Shield — Pokemon grow HUGE for 3 turns in battle! Their moves become Max Moves. Gigantamax is special — only certain Pokemon can do it and they get a unique appearance AND a special G-Max move. Famous Gigantamax forms: Charizard (a huge fiery dragon shape!), Pikachu (chubby original anime Pikachu!), Gengar (becomes a giant gaping mouth!), Snorlax (has a whole ecosystem on its belly!), Meowth (stretches super long!), Eevee (super fluffy!). Max Raid Battles let 4 trainers fight a Dynamax Pokemon together in the Wild Area!",
+      "source": "built-in",
+      "learnedAt": "2026-06-28T00:00:00.000Z"
+    }
+  ]
 }
