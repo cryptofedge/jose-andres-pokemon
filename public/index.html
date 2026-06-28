@@ -35,10 +35,10 @@
         <span></span><span></span><span></span>
       </button>
       <nav id="main-nav">
-        <a href="#home"    onclick="closeNav()">Home</a>
-        <a href="#pokemon" onclick="closeNav()">My Team</a>
-        <a href="#gallery" onclick="closeNav()">Gallery</a>
-        <a href="#posts"   onclick="closeNav()">Updates</a>
+        <a href="#home"    onclick="closeNav()" data-i18n="nav_home">Home</a>
+        <a href="#pokemon" onclick="closeNav()" data-i18n="nav_team">My Team</a>
+        <a href="#gallery" onclick="closeNav()" data-i18n="nav_gallery">Gallery</a>
+        <a href="#posts"   onclick="closeNav()" data-i18n="nav_updates">Updates</a>
       </nav>
       <div id="header-user" class="header-user hidden">
         <span id="header-avatar"></span>
@@ -46,8 +46,13 @@
         <button class="btn-logout" onclick="logout()">Logout</button>
       </div>
       <div class="header-btns">
-        <button id="btn-login" class="btn-login-header" onclick="openModal('login')">🔑 Login</button>
-        <button id="btn-register" class="btn-register-header" onclick="openModal('invite')">⭐ Join</button>
+        <button id="btn-login" class="btn-login-header" onclick="openModal('login')" data-i18n="btn_login">🔑 Login</button>
+        <button id="btn-register" class="btn-register-header" onclick="openModal('invite')" data-i18n="btn_join">⭐ Join</button>
+        <!-- Language picker -->
+        <div class="lang-wrap">
+          <button id="lang-btn" class="lang-toggle" onclick="toggleLangPicker()" aria-label="Change language">🌐</button>
+          <div id="lang-picker" class="lang-picker hidden"></div>
+        </div>
       </div>
     </div>
   </header>
@@ -56,15 +61,28 @@
   <!-- ── LOGIN MODAL ── -->
   <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()"></div>
 
+  <!-- ── INVITE CODE MODAL ── -->
+  <div id="modal-invite" class="modal hidden">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">⭐</div>
+    <h2 class="modal-title" data-i18n="invite_title">Exclusive Access</h2>
+    <p class="modal-sub" data-i18n="invite_sub">This is Jose's private Pokemon World.<br/>You need a special invite code to join!</p>
+    <input type="text" id="invite-code" class="modal-input" data-i18n="invite_ph" data-i18n-attr="placeholder" placeholder="Enter your invite code…" autocomplete="off" style="text-transform:uppercase;letter-spacing:3px;font-weight:700;text-align:center" />
+    <p id="invite-error" class="modal-error hidden"></p>
+    <button class="modal-btn" onclick="checkInviteCode()" data-i18n="invite_btn">⭐ Enter the World</button>
+    <p class="modal-switch">Already have an account? <button class="link-btn" onclick="openModal('login')">Log in →</button></p>
+  </div>
+
   <div id="modal-login" class="modal hidden">
     <button class="modal-close" onclick="closeModal()">✕</button>
+    <button class="modal-back" onclick="openModal('invite')">← Back</button>
     <div class="modal-icon">🔑</div>
-    <h2 class="modal-title">Welcome Back!</h2>
-    <p class="modal-sub">Log in to Jose's Pokemon World</p>
+    <h2 class="modal-title" data-i18n="login_title">Welcome Back!</h2>
+    <p class="modal-sub" data-i18n="login_sub">Log in to Jose's Pokemon World</p>
     <input type="text"     id="login-username" class="modal-input" placeholder="Your username" autocomplete="username" />
     <input type="password" id="login-password" class="modal-input" placeholder="Your secret code 🔒" autocomplete="current-password" />
     <p id="login-error" class="modal-error hidden"></p>
-    <button class="modal-btn" onclick="doLogin()">Let's Go! ⚡</button>
+    <button class="modal-btn" onclick="doLogin()" data-i18n="login_btn">Let's Go! ⚡</button>
     <p class="modal-switch">Don't have an account? <button class="link-btn" onclick="openModal('signup')">Request one here →</button></p>
   </div>
 
@@ -72,6 +90,7 @@
   <div id="modal-signup" class="modal hidden">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <div id="signup-step-1">
+      <button class="modal-back" onclick="openModal('invite')">← Back</button>
       <div class="modal-icon">🎮</div>
       <h2 class="modal-title">Join Jose's World!</h2>
       <p class="modal-sub">First, let us know how old you are</p>
@@ -84,6 +103,7 @@
 
     <!-- Under 13 consent screen -->
     <div id="signup-under13" class="hidden">
+      <button class="modal-back" onclick="showSignupStep('step-1')">← Back</button>
       <div class="modal-icon">👨‍👩‍👧</div>
       <h2 class="modal-title">Parent Permission Needed!</h2>
       <p class="modal-sub">Because you're under 13, a parent or guardian must give permission first. <strong>Please ask a parent to fill this out with you.</strong></p>
@@ -107,6 +127,7 @@
 
     <!-- 13–17 consent screen -->
     <div id="signup-teen" class="hidden">
+      <button class="modal-back" onclick="showSignupStep('step-1')">← Back</button>
       <div class="modal-icon">🎒</div>
       <h2 class="modal-title">Almost There!</h2>
       <p class="modal-sub">Because you're under 18, a parent or guardian must have given you permission to join.</p>
@@ -126,6 +147,7 @@
 
     <!-- 18+ screen -->
     <div id="signup-adult" class="hidden">
+      <button class="modal-back" onclick="showSignupStep('step-1')">← Back</button>
       <div class="modal-icon">🌟</div>
       <h2 class="modal-title">Request an Account</h2>
       <p class="modal-sub">Jose's family will review and approve your request.</p>
@@ -158,24 +180,24 @@
   <!-- ── HERO ── -->
   <section id="home" class="hero">
     <div class="hero-content">
-      <div class="hero-badge">⚡ Pokemon Trainer</div>
+      <div class="hero-badge" data-i18n="hero_badge">⚡ Pokemon Trainer</div>
       <div class="hero-name-wrap">
         <h1 class="hero-name">Jose Andres</h1>
       </div>
-      <h2>Welcome to My<br/><span class="yellow">Pokemon World!</span></h2>
-      <p>I love Pokemon! Check out my team, my pics, and everything Pokemon!</p>
+      <h2><span data-i18n="hero_h2a">Welcome to My</span><br/><span class="yellow" data-i18n="hero_h2b">Pokemon World!</span></h2>
+      <p data-i18n="hero_sub">I love Pokemon! Check out my team, my pics, and everything Pokemon!</p>
       <div class="hero-stats">
         <div class="stat-card" id="stat-caught">
           <span class="stat-num" id="pokemon-count">0</span>
-          <span class="stat-label">Pokemon Caught</span>
+          <span class="stat-label" data-i18n="stat_caught">Pokemon Caught</span>
         </div>
         <div class="stat-card">
           <span class="stat-num" id="gallery-count">0</span>
-          <span class="stat-label">Photos</span>
+          <span class="stat-label" data-i18n="stat_photos">Photos</span>
         </div>
         <div class="stat-card">
           <span class="stat-num" id="post-count">0</span>
-          <span class="stat-label">Updates</span>
+          <span class="stat-label" data-i18n="stat_updates">Updates</span>
         </div>
       </div>
     </div>
@@ -194,8 +216,8 @@
   <!-- ── MY TEAM ── -->
   <section id="pokemon" class="section">
     <div class="section-header">
-      <h2>⚔️ My Pokemon Team</h2>
-      <p>These are my best Pokemon!</p>
+      <h2>⚔️ <span data-i18n="sec_team_h">My Pokemon Team</span></h2>
+      <p data-i18n="sec_team_s">These are my best Pokemon!</p>
     </div>
     <div id="pokemon-grid" class="pokemon-grid">
       <div class="empty-state">
@@ -208,8 +230,8 @@
   <!-- ── GALLERY ── -->
   <section id="gallery" class="section alt-bg">
     <div class="section-header">
-      <h2>📸 My Gallery</h2>
-      <p>Photos from my Pokemon adventures!</p>
+      <h2>📸 <span data-i18n="sec_gal_h">My Gallery</span></h2>
+      <p data-i18n="sec_gal_s">Photos from my Pokemon adventures!</p>
     </div>
     <div id="gallery-grid" class="gallery-grid">
       <div class="empty-state">
@@ -227,8 +249,8 @@
   <!-- ── UPDATES ── -->
   <section id="posts" class="section">
     <div class="section-header">
-      <h2>📢 Latest Updates</h2>
-      <p>What Jose Andres has been up to!</p>
+      <h2>📢 <span data-i18n="sec_post_h">Latest Updates</span></h2>
+      <p data-i18n="sec_post_s">What Jose Andres has been up to!</p>
     </div>
     <div id="posts-list" class="posts-list">
       <div class="empty-state"><p>No updates yet!</p></div>
@@ -255,8 +277,8 @@
   <footer>
     <p>⚡ Jose Andres' Pokemon World · Made with ❤️ &amp; Pokeballs ⚡</p>
     <p class="footer-sub">Gotta catch 'em all!</p>
-    <button class="report-btn" onclick="openModal('report')">🚨 Report Something Wrong</button>
-    <p class="footer-safety">This site is monitored by Jose's family. Stay safe! 💛</p>
+    <button class="report-btn" onclick="openModal('report')" data-i18n="footer_report">🚨 Report Something Wrong</button>
+    <p class="footer-safety" data-i18n="footer_safe">This site is monitored by Jose's family. Stay safe! 💛</p>
   </footer>
 
   <!-- ── PIKAFELLITO AGENT ── -->
@@ -294,6 +316,7 @@
     </div>
   </div>
 
+  <script src="i18n.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

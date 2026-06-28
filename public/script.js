@@ -182,7 +182,7 @@ function logout() {
 // ── Modal system ──────────────────────────────────────────────────
 function openModal(type) {
   document.getElementById('modal-overlay').classList.remove('hidden');
-  ['login','signup','report'].forEach(t => {
+  ['login','signup','report','invite'].forEach(t => {
     document.getElementById(`modal-${t}`).classList.add('hidden');
   });
   document.getElementById(`modal-${type}`).classList.remove('hidden');
@@ -191,8 +191,50 @@ function openModal(type) {
 
 function closeModal() {
   document.getElementById('modal-overlay').classList.add('hidden');
-  ['login','signup','report'].forEach(t => document.getElementById(`modal-${t}`).classList.add('hidden'));
+  ['login','signup','report','invite'].forEach(t => document.getElementById(`modal-${t}`).classList.add('hidden'));
   document.body.style.overflow = '';
+}
+
+function showSignupStep(step) {
+  ['step-1','under13','teen','adult','success'].forEach(s => {
+    const el = document.getElementById(`signup-${s}`);
+    if (el) el.classList.add('hidden');
+  });
+  const target = document.getElementById(`signup-${step}`);
+  if (target) target.classList.remove('hidden');
+}
+
+// ── Lang picker init ──────────────────────────────────────────────
+function buildLangPicker() {
+  const picker = document.getElementById('lang-picker');
+  if (!picker) return;
+  picker.innerHTML = Object.entries(LANGS).map(([code, info]) =>
+    `<button class="lang-opt${code === currentLang ? ' active' : ''}" data-lang="${code}" onclick="setLang('${code}')">${info.flag} ${info.label}</button>`
+  ).join('');
+}
+
+function previewID(input, previewId) {
+  const preview = document.getElementById(previewId);
+  if (!preview || !input.files[0]) return;
+  const file = input.files[0];
+  const icon = file.type.startsWith('image/') ? '🖼️' : '📄';
+  preview.innerHTML = `<span class="id-upload-icon">${icon}</span><span class="id-upload-txt" style="color:var(--yellow)">${file.name}</span><span style="font-size:11px;color:rgba(255,255,255,0.5)">${(file.size/1024).toFixed(0)} KB</span>`;
+}
+
+function checkInviteCode() {
+  const code  = (document.getElementById('invite-code').value || '').trim().toUpperCase();
+  const err   = document.getElementById('invite-error');
+  if (!code) { err.textContent = 'Please enter your invite code.'; err.classList.remove('hidden'); return; }
+  if (code !== 'POKEFAM25') {
+    err.textContent = '❌ That code is not valid. Ask Jose\'s family for the invite code!';
+    err.classList.remove('hidden');
+    document.getElementById('invite-code').value = '';
+    return;
+  }
+  // Valid — send them to signup flow
+  err.classList.add('hidden');
+  document.getElementById('invite-code').value = '';
+  openModal('signup');
 }
 
 document.getElementById('modal-overlay').addEventListener('click', closeModal);
@@ -434,4 +476,6 @@ async function sendAgentMsg() {
 }
 
 // ── Boot ──────────────────────────────────────────────────────────
+buildLangPicker();
+applyLang();
 loadContent();

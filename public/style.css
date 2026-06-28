@@ -799,6 +799,17 @@ footer p {
 }
 .modal.hidden { display: none; }
 
+.modal-back {
+  position: absolute; top: 16px; left: 16px;
+  background: none;
+  border: none; color: rgba(255,255,255,0.55);
+  font-size: 13px; cursor: pointer;
+  padding: 4px 8px; border-radius: 6px;
+  font-family: var(--font-pixel);
+  transition: color 0.2s;
+}
+.modal-back:hover { color: var(--yellow); }
+
 .modal-close {
   position: absolute; top: 16px; right: 16px;
   background: rgba(255,255,255,0.1);
@@ -807,6 +818,52 @@ footer p {
   border-radius: 50%;
   font-size: 16px; cursor: pointer;
 }
+
+/* ── Language Picker ─────────────────────────────────────────────── */
+.lang-wrap { position: relative; }
+.lang-toggle {
+  background: rgba(255,255,255,0.12);
+  border: none; color: #fff;
+  width: 36px; height: 36px;
+  border-radius: 50%; font-size: 18px;
+  cursor: pointer; transition: background 0.2s;
+}
+.lang-toggle:hover { background: rgba(255,255,255,0.22); }
+.lang-picker {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: #1a1a2e;
+  border: 2px solid var(--yellow);
+  border-radius: 12px;
+  padding: 6px;
+  z-index: 500;
+  min-width: 160px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+.lang-opt {
+  display: flex; align-items: center; gap: 8px;
+  width: 100%; background: none; border: none;
+  color: #fff; font-size: 13px; font-family: var(--font-body);
+  padding: 8px 10px; border-radius: 8px;
+  cursor: pointer; text-align: left; transition: background 0.15s;
+}
+.lang-opt:hover { background: rgba(255,203,5,0.15); }
+.lang-opt.active { color: var(--yellow); font-weight: 700; }
+
+/* ── Parent ID Upload ────────────────────────────────────────────── */
+.id-upload-wrap {
+  border: 2px dashed rgba(255,203,5,0.4);
+  border-radius: 12px; padding: 14px 12px;
+  cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  margin-bottom: 12px;
+}
+.id-upload-wrap:hover { border-color: var(--yellow); background: rgba(255,203,5,0.06); }
+.id-preview {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+  pointer-events: none;
+}
+.id-upload-icon { font-size: 28px; }
+.id-upload-txt { font-size: 12px; color: rgba(255,255,255,0.6); text-align: center; }
 
 .modal-icon { font-size: 52px; text-align: center; margin-bottom: 12px; }
 
