@@ -622,49 +622,42 @@
     }
 
     /* ── Studio redesign ── */
-    .studio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 16px; }
+    .studio-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px,1fr)); gap: 20px; }
     .studio-tool {
       display: flex; flex-direction: column;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: var(--radius);
-      padding: 24px;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      /* panel-card handles bg/border/radius — only add flex behaviour */
+      margin-bottom: 0 !important;
     }
-    .studio-tool:hover { border-color: rgba(255,203,5,0.2); box-shadow: 0 0 24px rgba(255,203,5,0.05); }
+    .studio-tool:hover { border-color: rgba(255,203,5,0.3) !important; box-shadow: 0 0 32px rgba(255,203,5,0.08) !important; }
     .studio-tool-icon {
-      font-size: 28px; margin-bottom: 12px;
+      font-size: 28px; margin-bottom: 14px;
       width: 52px; height: 52px;
       background: rgba(255,203,5,0.08);
-      border: 1px solid rgba(255,203,5,0.15);
+      border: 1px solid rgba(255,203,5,0.18);
       border-radius: 14px;
       display: flex; align-items: center; justify-content: center;
     }
-    .studio-tool h3 {
-      font-family: var(--font-pixel); font-size: 9px;
-      color: var(--yellow); margin-bottom: 6px;
-    }
-    .studio-tool h3::before { display: none; }
-    .studio-tool p { color: rgba(255,255,255,0.45); font-size: 13px; margin-bottom: 16px; flex: 1; }
+    .studio-tool p { color: rgba(255,255,255,0.5); font-size: 13px; margin-bottom: 16px; flex: 1; }
     .studio-output {
       margin-top: 14px;
-      background: rgba(0,0,0,0.25);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.07);
       border-radius: 12px; padding: 16px;
       font-size: 13px; line-height: 1.75;
-      white-space: pre-wrap; color: rgba(255,255,255,0.8);
+      white-space: pre-wrap; color: rgba(255,255,255,0.85);
       max-height: 260px; overflow-y: auto;
     }
     .copy-btn {
       margin-top: 10px;
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12);
-      color: rgba(255,255,255,0.7); padding: 7px 16px;
+      color: rgba(255,255,255,0.7); padding: 8px 18px;
       border-radius: 8px; cursor: pointer;
       font-size: 12px; font-family: var(--font-body);
-      font-weight: 700; transition: all 0.15s;
+      font-weight: 700; letter-spacing: 0.5px;
+      transition: all 0.15s;
     }
-    .copy-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+    .copy-btn:hover { background: rgba(255,203,5,0.15); border-color: rgba(255,203,5,0.3); color: var(--yellow); }
 
     /* ── Request / Report cards ── */
     .req-card {
@@ -1007,7 +1000,7 @@
             <option value="review">Card Review</option>
             <option value="challenge">Challenge / Game</option>
           </select>
-          <button class="btn-primary" onclick="generateIdeas()" id="ideas-btn">⚡ Generate Ideas</button>
+          <button class="btn btn-primary" style="width:100%" onclick="generateIdeas()" id="ideas-btn">⚡ Generate Ideas</button>
           <div id="ideas-output" class="studio-output hidden"></div>
         </div>
 
@@ -1016,7 +1009,7 @@
           <h3 class="panel-title">📝 Caption Writer</h3>
           <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:14px">Write a full YouTube description + hashtags</p>
           <input type="text" id="caption-topic" class="form-input" placeholder="e.g. I pulled a Charizard EX!" style="margin-bottom:10px" />
-          <button class="btn-primary" onclick="generateCaption()" id="caption-btn">✍️ Write Caption</button>
+          <button class="btn btn-primary" style="width:100%" onclick="generateCaption()" id="caption-btn">✍️ Write Caption</button>
           <div id="caption-output" class="studio-output hidden">
             <div id="caption-text"></div>
             <button class="copy-btn" onclick="copyText('caption-text')">📋 Copy</button>
@@ -1028,7 +1021,7 @@
           <h3 class="panel-title">🖼️ Thumbnail Studio</h3>
           <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:14px">Get a thumbnail concept: title, colors, layout</p>
           <input type="text" id="thumb-topic" class="form-input" placeholder="e.g. Opening 50 Pokemon packs!" style="margin-bottom:10px" />
-          <button class="btn-primary" onclick="generateThumbnail()" id="thumb-btn">🎨 Design Thumbnail</button>
+          <button class="btn btn-primary" style="width:100%" onclick="generateThumbnail()" id="thumb-btn">🎨 Design Thumbnail</button>
           <div id="thumb-output" class="studio-output hidden">
             <div id="thumb-text"></div>
             <button class="copy-btn" onclick="copyText('thumb-text')">📋 Copy</button>
@@ -1040,7 +1033,7 @@
           <h3 class="panel-title">🏆 Title Generator</h3>
           <p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:14px">5 click-worthy titles for your next video</p>
           <input type="text" id="title-topic" class="form-input" placeholder="e.g. My rarest Pokemon card" style="margin-bottom:10px" />
-          <button class="btn-primary" onclick="generateTitles()" id="title-btn">🏆 Generate Titles</button>
+          <button class="btn btn-primary" style="width:100%" onclick="generateTitles()" id="title-btn">🏆 Generate Titles</button>
           <div id="title-output" class="studio-output hidden">
             <div id="title-text"></div>
             <button class="copy-btn" onclick="copyText('title-text')">📋 Copy</button>
