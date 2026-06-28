@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -873,7 +873,7 @@ async function loadPokemon() {
         <div class="item-name">${p.name}${p.nickname ? ` <span style="color:rgba(255,255,255,0.4);font-size:12px;">"${p.nickname}"</span>` : ''}</div>
         <div class="item-meta">${p.type} · Lv. ${p.level}</div>
       </div>
-      <button class="btn btn-red btn-sm" onclick="deletePokemon(${p.id})">Remove</button>
+      <button class="btn btn-red btn-sm" onclick="deletePokemon('\')">Remove</button>
     </div>
   `).join('');
 }
@@ -927,7 +927,7 @@ async function loadGallery() {
         <div class="item-name">${g.caption || '(no caption)'}</div>
         <div class="item-meta">${new Date(g.createdAt).toLocaleDateString()}</div>
       </div>
-      <button class="btn btn-red btn-sm" onclick="deletePhoto(${g.id})">Delete</button>
+      <button class="btn btn-red btn-sm" onclick="deletePhoto('\')">Delete</button>
     </div>
   `).join('');
 }
@@ -1024,7 +1024,7 @@ async function loadPosts() {
         <div class="item-name">${p.title}</div>
         <div class="item-meta">${new Date(p.createdAt).toLocaleDateString()} · ${p.body.slice(0,60)}${p.body.length > 60 ? '…' : ''}</div>
       </div>
-      <button class="btn btn-red btn-sm" onclick="deletePost(${p.id})">Delete</button>
+      <button class="btn btn-red btn-sm" onclick="deletePost('\')">Delete</button>
     </div>
   `).join('');
 }
@@ -1106,9 +1106,9 @@ async function loadFriends() {
         <div class="item-meta">${f.role === 'owner' ? '⭐ Owner' : '👥 Friend'}${f.school?' · '+f.school:''}${f.age?' · Age '+f.age:''} · Joined ${new Date(f.createdAt).toLocaleDateString()}</div>
       </div>
       ${f.role !== 'owner' ? `
-        <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:#fff" onclick="resetPassword(${f.id})">🔑</button>
-        ${f.locked ? `<button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="unlockAccount(${f.id})">Unlock</button>` : ''}
-        <button class="btn btn-red btn-sm" onclick="deleteFriend(${f.id})">Remove</button>
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:#fff" onclick="resetPassword('\')">🔑</button>
+        ${f.locked ? `<button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="unlockAccount('\')">Unlock</button>` : ''}
+        <button class="btn btn-red btn-sm" onclick="deleteFriend('\')">Remove</button>
       ` : ''}
     </div>
   `).join('');
@@ -1139,9 +1139,9 @@ async function loadRequests() {
         <br/>IP: ${r.ip||'—'}
       </div>
       <div class="req-actions">
-        <input type="text" placeholder="Set their secret code *" id="req-pwd-${r.id}" style="max-width:200px" />
-        <button class="btn btn-primary btn-sm" onclick="approveRequest(${r.id})">✅ Approve</button>
-        <button class="btn btn-red btn-sm"     onclick="denyRequest(${r.id})">❌ Deny</button>
+        <input type="text" placeholder="Set their secret code *" id="req-pwd-${r._id||r.id}" style="max-width:200px" />
+        <button class="btn btn-primary btn-sm" onclick="approveRequest('${r._id||r.id}')">✅ Approve</button>
+        <button class="btn btn-red btn-sm"     onclick="denyRequest('${r._id||r.id}')">❌ Deny</button>
       </div>
     </div>
   `).join('');
@@ -1195,7 +1195,7 @@ async function loadSafety() {
         <div class="report-title">🚨 Report from ${r.reporterName} about "${r.aboutUser||'unknown'}"</div>
         <div class="report-body">${r.description}</div>
         <div class="report-meta">IP: ${r.ip} · ${new Date(r.createdAt).toLocaleString()}</div>
-        <button class="btn btn-sm" style="background:var(--green);color:#fff;margin-top:12px" onclick="closeReport(${r.id})">Mark Resolved ✅</button>
+        <button class="btn btn-sm" style="background:var(--green);color:#fff;margin-top:12px" onclick="closeReport('\')">Mark Resolved ✅</button>
       </div>
     `).join('');
   }
@@ -1211,9 +1211,9 @@ async function loadSafety() {
         <div class="req-flag">⚠️ ${r.flagReason}</div>
         <div class="req-meta">Age: ${r.age} · School: ${r.school||'—'} · IP: ${r.ip} · ${new Date(r.createdAt).toLocaleString()}</div>
         <div class="req-actions">
-          <input type="text" placeholder="Secret code if approving" id="sfr-pwd-${r.id}" style="max-width:200px" />
-          <button class="btn btn-primary btn-sm" onclick="approveRequest(${r.id})">✅ Approve</button>
-          <button class="btn btn-red btn-sm"     onclick="denyRequest(${r.id})">❌ Deny</button>
+          <input type="text" placeholder="Secret code if approving" id="req-pwd-${r._id||r.id}" style="max-width:200px" />
+          <button class="btn btn-primary btn-sm" onclick="approveRequest('${r._id||r.id}')">✅ Approve</button>
+          <button class="btn btn-red btn-sm"     onclick="denyRequest('${r._id||r.id}')">❌ Deny</button>
         </div>
       </div>
     `).join('');
@@ -1231,8 +1231,8 @@ async function loadSafety() {
           <div class="item-name">${u.displayName} <span style="color:rgba(255,255,255,0.3);font-size:12px">@${u.username}</span></div>
           <div class="item-meta">Failed attempts: ${u.failedLogins}</div>
         </div>
-        <button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="unlockAccount(${u.id})">Unlock</button>
-        <button class="btn btn-red btn-sm" onclick="deleteFriend(${u.id})">Remove</button>
+        <button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="unlockAccount('\')">Unlock</button>
+        <button class="btn btn-red btn-sm" onclick="deleteFriend('\')">Remove</button>
       </div>
     `).join('');
   }
@@ -1374,3 +1374,4 @@ function copyText(elId) {
 </script>
 </body>
 </html>
+

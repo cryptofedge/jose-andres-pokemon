@@ -6,13 +6,29 @@ const fs          = require('fs');
 const bcrypt      = require('bcryptjs');
 const jwt         = require('jsonwebtoken');
 const rateLimit   = require('express-rate-limit');
+const mongoose    = require('mongoose');
 const { scanText, scanObject } = require('./safety');
 const agent       = require('./agent');
+const { Pokemon, GalleryItem, Post, User, PendingRequest, ActivityLog, Report } = require('./models');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET     = process.env.JWT_SECRET     || 'pokeball-secret-2026';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'pikachu123';
+const MONGODB_URI    = process.env.MONGODB_URI    || '';
+
+// ── MongoDB connect ───────────────────────────────────────────────────────────
+if (MONGODB_URI) {
+  mongoose.connect(MONGODB_URI)
+    .then(() => {
+      console.log('✅  MongoDB connected');
+      seedJose();
+      seedContent();
+    })
+    .catch(err => console.error('❌  MongoDB connection error:', err.message));
+} else {
+  console.warn('⚠️   MONGODB_URI not set — data will NOT persist across restarts.');
+}
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors());
@@ -21,7 +37,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ── Rate limiting ─────────────────────────────────────────────────────────────
-// Strict limit on login — 5 attempts per 15 min per IP
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
@@ -30,7 +45,6 @@ const loginLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// General API limit — 100 req/min per IP
 const apiLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 100,
@@ -51,73 +65,79 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
+  limits: { fileSize: 50 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    if (/jpeg|jpg|png|gif|webp/.test(path.extname(file.originalname).toLowerCase())) return cb(null, true);
-    cb(Object.assign(new Error('Images only!'), { status: 400 }));
+    const ok = /jpeg|jpg|png|gif|webp|mp4|webm|mov|avi/.test(
+      path.extname(file.originalname).toLowerCase()
+    );
+    if (ok) return cb(null, true);
+    cb(Object.assign(new Error('Images and videos only!'), { status: 400 }));
   }
 });
 
-// ── Data helpers ──────────────────────────────────────────────────────────────
-const DATA_FILE      = path.join(__dirname, 'data', 'content.json');
-const USERS_FILE     = path.join(__dirname, 'data', 'users.json');
-const PENDING_FILE   = path.join(__dirname, 'data', 'pending.json');
-const ACTIVITY_FILE  = path.join(__dirname, 'data', 'activity.json');
-const REPORTS_FILE   = path.join(__dirname, 'data', 'reports.json');
-
-const readData     = ()  => JSON.parse(fs.readFileSync(DATA_FILE,     'utf8'));
-const writeData    = d   => fs.writeFileSync(DATA_FILE,     JSON.stringify(d, null, 2));
-const readUsers    = ()  => JSON.parse(fs.readFileSync(USERS_FILE,    'utf8'));
-const writeUsers   = d   => fs.writeFileSync(USERS_FILE,    JSON.stringify(d, null, 2));
-const readPending  = ()  => JSON.parse(fs.readFileSync(PENDING_FILE,  'utf8'));
-const writePending = d   => fs.writeFileSync(PENDING_FILE,  JSON.stringify(d, null, 2));
-const readActivity = ()  => JSON.parse(fs.readFileSync(ACTIVITY_FILE, 'utf8'));
-const writeActivity= d   => fs.writeFileSync(ACTIVITY_FILE, JSON.stringify(d, null, 2));
-const readReports  = ()  => JSON.parse(fs.readFileSync(REPORTS_FILE,  'utf8'));
-const writeReports = d   => fs.writeFileSync(REPORTS_FILE,  JSON.stringify(d, null, 2));
-
 // ── Activity logger ───────────────────────────────────────────────────────────
-function logActivity({ type, userId, username, displayName, ip, detail, severity = 'info' }) {
-  const db = readActivity();
-  db.logs.unshift({
-    id: Date.now(),
-    type,        // login_success | login_fail | login_locked | account_request
-                 // report | safety_flag | logout | content_add | content_delete
-    userId:      userId  || null,
-    username:    username|| 'anonymous',
-    displayName: displayName || '',
-    ip,
-    detail:      detail || '',
-    severity,    // info | warning | danger
-    timestamp:   new Date().toISOString()
-  });
-  // Keep last 1000 entries
-  if (db.logs.length > 1000) db.logs = db.logs.slice(0, 1000);
-  writeActivity(db);
+async function logActivity({ type, userId, username, displayName, ip, detail, severity = 'info' }) {
+  try {
+    await ActivityLog.create({ type, userId: userId||null, username: username||'anonymous', displayName: displayName||'', ip, detail: detail||'', severity });
+    // Keep only last 1000 logs
+    const count = await ActivityLog.countDocuments();
+    if (count > 1000) {
+      const oldest = await ActivityLog.find().sort({ timestamp: 1 }).limit(count - 1000);
+      await ActivityLog.deleteMany({ _id: { $in: oldest.map(l => l._id) } });
+    }
+  } catch (e) { console.error('logActivity error:', e.message); }
 }
 
 // ── Seed Jose's owner account ─────────────────────────────────────────────────
-(async () => {
-  const db = readUsers();
-  if (!db.users.find(u => u.role === 'owner')) {
-    db.users.push({
-      id: 1,
+async function seedJose() {
+  const exists = await User.findOne({ role: 'owner' });
+  if (!exists) {
+    await User.create({
       username: 'jose',
       displayName: 'Jose Andres',
       avatar: '⭐',
       color: '#FFCB05',
       role: 'owner',
-      school: '',
       age: 6,
-      failedLogins: 0,
-      locked: false,
       passwordHash: await bcrypt.hash('jose123', 10),
-      createdAt: new Date().toISOString()
     });
-    writeUsers(db);
-    console.log("✅  Jose's account ready — username: jose  password: jose123");
+    console.log("✅  Jose's account seeded — jose / jose123");
   }
-})();
+}
+
+// ── Seed starter content (only if DB is empty) ────────────────────────────────
+async function seedContent() {
+  const postCount = await Post.countDocuments();
+  if (postCount === 0) {
+    await Post.insertMany([
+      { title: 'I got my first Pokemon card pack today!! 🎉', body: "Daddy took me to the store and I got a Scarlet & Violet booster pack. I pulled a CHARIZARD EX!!! It's so shiny and cool. I'm never trading it. Never ever ever. 🔥", createdAt: new Date('2026-06-20T18:30:00Z') },
+      { title: 'My favorite Pokemon is Pikachu ⚡', body: "I love Pikachu because he is Ash's best friend and he never gives up! I want a Pikachu backpack for school. Also Charizard is cool too but Pikachu is my NUMBER ONE. Ask PIKAFELLITO if you want to know more about Pikachu!", createdAt: new Date('2026-06-18T14:00:00Z') },
+      { title: 'We went to Pokemon League at the game store! 🏆', body: "Papi brought me to the Pokemon League event at the card shop on Saturday. There were so many cards everywhere! I watched the big kids battle and it looked SO cool. I want to learn to play the card game. PIKAFELLITO is teaching me the rules!", createdAt: new Date('2026-06-15T20:00:00Z') },
+    ]);
+  }
+  const pokCount = await Pokemon.countDocuments();
+  if (pokCount === 0) {
+    await Pokemon.insertMany([
+      { name:'Pikachu',  type:'Electric', nickname:'Sparky', level:25, url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png' },
+      { name:'Charizard',type:'Fire',     nickname:'Blaze',  level:50, url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png' },
+      { name:'Eevee',    type:'Normal',   nickname:'Cookie', level:12, url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png' },
+      { name:'Gengar',   type:'Ghost',    nickname:'Spooky', level:36, url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png' },
+      { name:'Mewtwo',   type:'Psychic',  nickname:'Boss',   level:70, url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png' },
+      { name:'Togepi',   type:'Fairy',    nickname:'Eggie',  level:8,  url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/175.png' },
+    ]);
+  }
+  const galCount = await GalleryItem.countDocuments();
+  if (galCount === 0) {
+    await GalleryItem.insertMany([
+      { url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png',  caption:'My Pikachu card — got this one from Grandma! ⚡', createdAt: new Date('2026-06-22T10:00:00Z') },
+      { url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png',   caption:'CHARIZARD EX I pulled from my booster pack!! 🔥🔥🔥', createdAt: new Date('2026-06-20T19:00:00Z') },
+      { url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png', caption:"Eevee is the cutest Pokemon ever, don't @ me 🥺", createdAt: new Date('2026-06-19T15:30:00Z') },
+      { url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png', caption:'Mewtwo — the most powerful Pokemon! Papi helped me get this one.', createdAt: new Date('2026-06-17T12:00:00Z') },
+      { url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png',  caption:'Gengar is spooky but I love him 👻', createdAt: new Date('2026-06-14T20:00:00Z') },
+      { url:'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/175.png', caption:'Togepi is my baby 🥚 I named her Eggie', createdAt: new Date('2026-06-10T11:00:00Z') },
+    ]);
+  }
+}
 
 // ── Auth helpers ──────────────────────────────────────────────────────────────
 function requireAdmin(req, res, next) {
@@ -137,7 +157,6 @@ function getIP(req) {
   return req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress || 'unknown';
 }
 
-// ── Age calc ──────────────────────────────────────────────────────────────────
 function calcAge(dob) {
   const today = new Date(), birth = new Date(dob);
   let age = today.getFullYear() - birth.getFullYear();
@@ -150,30 +169,33 @@ function calcAge(dob) {
 //  PUBLIC API
 // ══════════════════════════════════════════════════════════════════════════════
 
-app.get('/api/content', (req, res) => res.json(readData()));
-
-app.get('/api/friends', (req, res) => {
-  const db = readUsers();
-  res.json(db.users.map(({ id, displayName, avatar, color, role, school }) =>
-    ({ id, displayName, avatar, color, role, school })
-  ));
+app.get('/api/content', async (req, res) => {
+  const [posts, pokemon, gallery] = await Promise.all([
+    Post.find().sort({ createdAt: -1 }),
+    Pokemon.find().sort({ createdAt: 1 }),
+    GalleryItem.find().sort({ createdAt: -1 }),
+  ]);
+  res.json({ posts, pokemon, gallery, favoriteTeam: [] });
 });
 
-// ── Login (rate-limited, account lockout) ─────────────────────────────────────
+app.get('/api/friends', async (req, res) => {
+  const users = await User.find({}, 'displayName avatar color role school');
+  res.json(users);
+});
+
+// ── Login ─────────────────────────────────────────────────────────────────────
 app.post('/api/auth/login', loginLimiter, async (req, res) => {
   const { username, password } = req.body;
-  const ip  = getIP(req);
-  const db  = readUsers();
-  const user = db.users.find(u => u.username.toLowerCase() === (username||'').toLowerCase().trim());
+  const ip   = getIP(req);
+  const user = await User.findOne({ username: (username||'').toLowerCase().trim() });
 
   if (!user) {
-    logActivity({ type: 'login_fail', username, ip, detail: 'Unknown username', severity: 'warning' });
+    await logActivity({ type: 'login_fail', username, ip, detail: 'Unknown username', severity: 'warning' });
     return res.status(401).json({ error: "Who are you? Ask Jose's family to add you! 🤔" });
   }
 
-  // Locked account
   if (user.locked) {
-    logActivity({ type: 'login_locked', userId: user.id, username: user.username, displayName: user.displayName, ip, detail: 'Attempted login on locked account', severity: 'danger' });
+    await logActivity({ type: 'login_locked', userId: user.id, username: user.username, displayName: user.displayName, ip, detail: 'Attempted login on locked account', severity: 'danger' });
     return res.status(403).json({ error: '🔒 This account is locked. Ask Jose\'s family for help.' });
   }
 
@@ -183,22 +205,20 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
     user.failedLogins = (user.failedLogins || 0) + 1;
     if (user.failedLogins >= 5) {
       user.locked = true;
-      writeUsers(db);
-      logActivity({ type: 'login_locked', userId: user.id, username: user.username, displayName: user.displayName, ip, detail: `Account auto-locked after ${user.failedLogins} failed attempts`, severity: 'danger' });
+      await user.save();
+      await logActivity({ type: 'login_locked', userId: user.id, username: user.username, displayName: user.displayName, ip, detail: `Auto-locked after ${user.failedLogins} failed attempts`, severity: 'danger' });
       return res.status(403).json({ error: '🔒 Too many wrong codes! Account locked. Ask Jose\'s family for help.' });
     }
-    writeUsers(db);
-    logActivity({ type: 'login_fail', userId: user.id, username: user.username, displayName: user.displayName, ip, detail: `Wrong password (attempt ${user.failedLogins}/5)`, severity: 'warning' });
+    await user.save();
+    await logActivity({ type: 'login_fail', userId: user.id, username: user.username, displayName: user.displayName, ip, detail: `Wrong password (attempt ${user.failedLogins}/5)`, severity: 'warning' });
     return res.status(401).json({ error: `Wrong secret code! ${5 - user.failedLogins} tries left 🔑` });
   }
 
-  // Success — reset failed counter
   user.failedLogins = 0;
-  user.lastLogin = new Date().toISOString();
+  user.lastLogin = new Date();
   user.lastIP = ip;
-  writeUsers(db);
-
-  logActivity({ type: 'login_success', userId: user.id, username: user.username, displayName: user.displayName, ip, detail: 'Successful login', severity: 'info' });
+  await user.save();
+  await logActivity({ type: 'login_success', userId: user.id, username: user.username, displayName: user.displayName, ip, detail: 'Successful login', severity: 'info' });
 
   const token = jwt.sign(
     { id: user.id, username: user.username, displayName: user.displayName, avatar: user.avatar, color: user.color, role: user.role },
@@ -208,14 +228,13 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
 });
 
 // ── Session restore ───────────────────────────────────────────────────────────
-app.get('/api/auth/me', requireToken, (req, res) => {
-  const db   = readUsers();
-  const user = db.users.find(u => u.id === req.user.id);
+app.get('/api/auth/me', requireToken, async (req, res) => {
+  const user = await User.findById(req.user.id);
   if (!user || user.locked) return res.status(401).json({ error: 'Session invalid.' });
   res.json({ id: user.id, displayName: user.displayName, avatar: user.avatar, color: user.color, role: user.role });
 });
 
-// ── Account request (age gate + parental consent + safety scan) ───────────────
+// ── Account request ───────────────────────────────────────────────────────────
 app.post('/api/auth/request-account', async (req, res) => {
   const ip = getIP(req);
   const { displayName, username, dob, school, parentName, parentEmail, parentConsent, selfConsent } = req.body;
@@ -223,66 +242,46 @@ app.post('/api/auth/request-account', async (req, res) => {
   if (!displayName || !username || !dob)
     return res.status(400).json({ error: 'Please fill in all required fields.' });
 
-  // Safety scan all text fields
   const scan = scanObject({ displayName, username, school: school||'', parentName: parentName||'' });
   if (!scan.safe) {
-    logActivity({ type: 'safety_flag', username, ip, detail: `Unsafe content in signup: ${scan.flags.join(', ')}`, severity: 'danger' });
+    await logActivity({ type: 'safety_flag', username, ip, detail: `Unsafe content in signup: ${scan.flags.join(', ')}`, severity: 'danger' });
     return res.status(400).json({ error: '🚨 Your request contains inappropriate content and has been flagged.' });
   }
 
   const age = calcAge(dob);
   if (age < 1 || age > 120) return res.status(400).json({ error: 'Please enter a valid date of birth.' });
 
-  if (age < 13) {
-    if (!parentName || !parentEmail) return res.status(400).json({ error: 'Kids under 13 need a parent name and email.' });
-    if (!parentConsent) return res.status(400).json({ error: 'A parent or guardian must check the consent box.' });
-  }
-  if (age >= 13 && age < 18) {
-    if (!selfConsent) return res.status(400).json({ error: 'You need to confirm a parent or guardian has given permission.' });
-  }
+  if (age < 13 && (!parentName || !parentEmail))
+    return res.status(400).json({ error: 'Kids under 13 need a parent name and email.' });
+  if (age < 13 && !parentConsent)
+    return res.status(400).json({ error: 'A parent or guardian must check the consent box.' });
+  if (age >= 13 && age < 18 && !selfConsent)
+    return res.status(400).json({ error: 'You need to confirm a parent or guardian has given permission.' });
 
-  const db      = readUsers();
-  const pending = readPending();
-  if (db.users.find(u => u.username.toLowerCase() === username.toLowerCase()))
-    return res.status(409).json({ error: 'That username is taken! Try another.' });
-  if (pending.requests.find(r => r.username.toLowerCase() === username.toLowerCase() && r.status === 'pending'))
-    return res.status(409).json({ error: 'A request with that username is already waiting.' });
+  const uname = username.toLowerCase().replace(/\s+/g, '');
+  const existing = await User.findOne({ username: uname });
+  if (existing) return res.status(409).json({ error: 'That username is taken! Try another.' });
+  const pendingDup = await PendingRequest.findOne({ username: uname, status: 'pending' });
+  if (pendingDup) return res.status(409).json({ error: 'A request with that username is already waiting.' });
 
-  // Flag adult (18+) trying to connect to a 6-yr-old's kids site — auto-mark for review
   const suspiciousAdult = age >= 18;
-
-  const request = {
-    id: Date.now(),
-    displayName,
-    username: username.toLowerCase().replace(/\s+/g, ''),
-    dob, age,
+  const request = await PendingRequest.create({
+    displayName, username: uname, dob, age,
     school: school || '',
     parentName:    age < 13 ? (parentName  || '') : '',
     parentEmail:   age < 13 ? (parentEmail || '') : '',
     parentConsent: age < 13 ? !!parentConsent : null,
     selfConsent:   (age >= 13 && age < 18) ? !!selfConsent : null,
-    status: 'pending',
     flagged: suspiciousAdult,
-    flagReason: suspiciousAdult ? 'Adult (18+) requesting access to a children\'s site — manual review required' : '',
+    flagReason: suspiciousAdult ? 'Adult (18+) requesting access to a children\'s site' : '',
     ip,
-    createdAt: new Date().toISOString()
-  };
-
-  pending.requests.push(request);
-  writePending(pending);
-
-  logActivity({
-    type: 'account_request',
-    username,
-    ip,
-    detail: `Account request: age ${age}${suspiciousAdult ? ' — ADULT, flagged for review' : ''}`,
-    severity: suspiciousAdult ? 'danger' : 'info'
   });
 
+  await logActivity({ type: 'account_request', username: uname, ip, detail: `Account request: age ${age}${suspiciousAdult ? ' — ADULT, flagged' : ''}`, severity: suspiciousAdult ? 'danger' : 'info' });
   res.json({ ok: true });
 });
 
-// ── PIKAFELLITO Agent ───────────────────────────────────────────────────────────
+// ── PIKAFELLITO ───────────────────────────────────────────────────────────────
 const agentLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
@@ -291,19 +290,13 @@ const agentLimiter = rateLimit({
 
 app.post('/api/agent/chat', agentLimiter, async (req, res) => {
   const { message, sessionId } = req.body;
-  if (!message || !sessionId)
-    return res.status(400).json({ error: 'Need a message and sessionId.' });
-  if (message.length > 500)
-    return res.status(400).json({ error: 'Message too long!' });
-
-  if (!process.env.ANTHROPIC_API_KEY)
-    return res.status(503).json({ error: 'Agent not configured — set ANTHROPIC_API_KEY.' });
+  if (!message || !sessionId) return res.status(400).json({ error: 'Need a message and sessionId.' });
+  if (message.length > 500) return res.status(400).json({ error: 'Message too long!' });
+  if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: 'Agent not configured.' });
 
   try {
     const result = await agent.chat(sessionId, message);
-    if (result.flagged) {
-      logActivity({ type: 'safety_flag', ip: getIP(req), detail: `Agent blocked unsafe message: "${message.slice(0,80)}"`, severity: 'warning' });
-    }
+    if (result.flagged) await logActivity({ type: 'safety_flag', ip: getIP(req), detail: `Agent blocked: "${message.slice(0,80)}"`, severity: 'warning' });
     res.json({ reply: result.reply });
   } catch (err) {
     console.error('Agent error:', err.message);
@@ -317,21 +310,8 @@ app.post('/api/report', async (req, res) => {
   const { reporterName, description, aboutUser } = req.body;
   if (!description) return res.status(400).json({ error: 'Please describe what happened.' });
 
-  const db = readReports();
-  const report = {
-    id: Date.now(),
-    reporterName: reporterName || 'Anonymous',
-    description,
-    aboutUser: aboutUser || '',
-    ip,
-    status: 'open',
-    createdAt: new Date().toISOString()
-  };
-  db.reports.push(report);
-  writeReports(db);
-
-  logActivity({ type: 'report', username: reporterName||'anonymous', ip, detail: `Safety report filed about: "${aboutUser||'unknown'}" — ${description.slice(0,80)}`, severity: 'danger' });
-
+  await Report.create({ reporterName: reporterName||'Anonymous', description, aboutUser: aboutUser||'', ip });
+  await logActivity({ type: 'report', username: reporterName||'anonymous', ip, detail: `Report about: "${aboutUser||'unknown'}" — ${description.slice(0,80)}`, severity: 'danger' });
   res.json({ ok: true });
 });
 
@@ -344,18 +324,15 @@ app.post('/api/admin/login', (req, res) => {
   else res.status(401).json({ error: 'Wrong password!' });
 });
 
-// ── Safety dashboard data ─────────────────────────────────────────────────────
-app.get('/api/admin/safety', requireAdmin, (req, res) => {
-  const activity = readActivity();
-  const reports  = readReports();
-  const pending  = readPending();
-  const db       = readUsers();
-
-  const openReports    = reports.reports.filter(r => r.status === 'open');
-  const dangerLogs     = activity.logs.filter(l => l.severity === 'danger').slice(0, 50);
-  const flaggedRequests= pending.requests.filter(r => r.flagged && r.status === 'pending');
-  const lockedAccounts = db.users.filter(u => u.locked);
-
+// ── Safety dashboard ──────────────────────────────────────────────────────────
+app.get('/api/admin/safety', requireAdmin, async (req, res) => {
+  const [openReports, dangerLogs, flaggedRequests, lockedAccounts, recentActivity] = await Promise.all([
+    Report.find({ status: 'open' }),
+    ActivityLog.find({ severity: 'danger' }).sort({ timestamp: -1 }).limit(50),
+    PendingRequest.find({ flagged: true, status: 'pending' }),
+    User.find({ locked: true }),
+    ActivityLog.find().sort({ timestamp: -1 }).limit(100),
+  ]);
   res.json({
     alerts: {
       openReports:     openReports.length,
@@ -363,67 +340,55 @@ app.get('/api/admin/safety', requireAdmin, (req, res) => {
       flaggedRequests: flaggedRequests.length,
       lockedAccounts:  lockedAccounts.length,
     },
-    openReports,
-    dangerLogs,
-    flaggedRequests,
-    lockedAccounts,
-    recentActivity: activity.logs.slice(0, 100)
+    openReports, dangerLogs, flaggedRequests, lockedAccounts, recentActivity
   });
 });
 
-// Close a report
-app.post('/api/admin/reports/:id/close', requireAdmin, (req, res) => {
-  const db = readReports();
-  const r  = db.reports.find(r => r.id === Number(req.params.id));
+app.post('/api/admin/reports/:id/close', requireAdmin, async (req, res) => {
+  const r = await Report.findByIdAndUpdate(req.params.id, { status: 'closed', closedAt: new Date() });
   if (!r) return res.status(404).json({ error: 'Not found' });
-  r.status = 'closed';
-  r.closedAt = new Date().toISOString();
-  writeReports(db);
   res.json({ ok: true });
 });
 
-// Lock an account
-app.post('/api/admin/friends/:id/lock', requireAdmin, (req, res) => {
-  const db   = readUsers();
-  const user = db.users.find(u => u.id === Number(req.params.id));
+app.post('/api/admin/friends/:id/lock', requireAdmin, async (req, res) => {
+  const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'Not found' });
   if (user.role === 'owner') return res.status(403).json({ error: 'Cannot lock the owner account.' });
   user.locked = true;
-  writeUsers(db);
-  logActivity({ type: 'account_locked', userId: user.id, username: user.username, displayName: user.displayName, ip: 'admin', detail: 'Account locked by admin', severity: 'warning' });
+  await user.save();
+  await logActivity({ type: 'account_locked', username: user.username, displayName: user.displayName, ip: 'admin', detail: 'Locked by admin', severity: 'warning' });
   res.json({ ok: true });
 });
 
-// Unlock an account
-app.post('/api/admin/friends/:id/unlock', requireAdmin, (req, res) => {
-  const db   = readUsers();
-  const user = db.users.find(u => u.id === Number(req.params.id));
+app.post('/api/admin/friends/:id/unlock', requireAdmin, async (req, res) => {
+  const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'Not found' });
   user.locked = false;
   user.failedLogins = 0;
-  writeUsers(db);
-  logActivity({ type: 'account_unlocked', userId: user.id, username: user.username, displayName: user.displayName, ip: 'admin', detail: 'Account unlocked by admin', severity: 'info' });
+  await user.save();
+  await logActivity({ type: 'account_unlocked', username: user.username, displayName: user.displayName, ip: 'admin', detail: 'Unlocked by admin', severity: 'info' });
   res.json({ ok: true });
 });
 
 // ── Pending requests ──────────────────────────────────────────────────────────
-app.get('/api/admin/requests', requireAdmin, (req, res) => res.json(readPending()));
+app.get('/api/admin/requests', requireAdmin, async (req, res) => {
+  const requests = await PendingRequest.find().sort({ createdAt: -1 });
+  res.json({ requests });
+});
 
 app.post('/api/admin/requests/:id/approve', requireAdmin, async (req, res) => {
   const { password, avatar, color } = req.body;
   if (!password) return res.status(400).json({ error: 'Provide a starter password.' });
 
-  const pending = readPending();
-  const r = pending.requests.find(r => r.id === Number(req.params.id));
-  if (!r)              return res.status(404).json({ error: 'Not found.' });
+  const r = await PendingRequest.findById(req.params.id);
+  if (!r) return res.status(404).json({ error: 'Not found.' });
   if (r.status !== 'pending') return res.status(409).json({ error: 'Already processed.' });
 
-  const db = readUsers();
-  if (db.users.find(u => u.username === r.username)) return res.status(409).json({ error: 'Username exists.' });
+  const exists = await User.findOne({ username: r.username });
+  if (exists) return res.status(409).json({ error: 'Username exists.' });
 
   const AVATARS = ['🐱','🐶','🐸','🦊','🐼','🐨','🦁','🐯','🐺','🦝','🐻','🐮','🦄','🐙','🦋'];
-  const newUser = {
-    id: Date.now(),
+  const newUser = await User.create({
     username: r.username,
     displayName: r.displayName,
     avatar: avatar || AVATARS[Math.floor(Math.random()*AVATARS.length)],
@@ -431,38 +396,31 @@ app.post('/api/admin/requests/:id/approve', requireAdmin, async (req, res) => {
     role: 'friend',
     school: r.school,
     age: r.age,
-    failedLogins: 0,
-    locked: false,
     passwordHash: await bcrypt.hash(password, 10),
-    createdAt: new Date().toISOString()
-  };
-  db.users.push(newUser);
-  writeUsers(db);
+  });
+
   r.status = 'approved';
-  r.approvedAt = new Date().toISOString();
-  writePending(pending);
-  logActivity({ type: 'account_approved', username: r.username, displayName: r.displayName, ip: 'admin', detail: `Account approved for age ${r.age}`, severity: 'info' });
-  const { passwordHash: _, ...safe } = newUser;
+  r.approvedAt = new Date();
+  await r.save();
+  await logActivity({ type: 'account_approved', username: r.username, displayName: r.displayName, ip: 'admin', detail: `Approved age ${r.age}`, severity: 'info' });
+  const { passwordHash: _, ...safe } = newUser.toObject();
   res.json(safe);
 });
 
-app.post('/api/admin/requests/:id/deny', requireAdmin, (req, res) => {
-  const pending = readPending();
-  const r = pending.requests.find(r => r.id === Number(req.params.id));
+app.post('/api/admin/requests/:id/deny', requireAdmin, async (req, res) => {
+  const r = await PendingRequest.findById(req.params.id);
   if (!r) return res.status(404).json({ error: 'Not found.' });
   r.status = 'denied';
-  r.deniedAt = new Date().toISOString();
-  writePending(pending);
-  logActivity({ type: 'account_denied', username: r.username, ip: 'admin', detail: `Request denied for age ${r.age}${r.flagged?' (was flagged)':''}`, severity: 'info' });
+  r.deniedAt = new Date();
+  await r.save();
+  await logActivity({ type: 'account_denied', username: r.username, ip: 'admin', detail: `Denied age ${r.age}`, severity: 'info' });
   res.json({ ok: true });
 });
 
 // ── Friends management ────────────────────────────────────────────────────────
-app.get('/api/admin/friends', requireAdmin, (req, res) => {
-  const db = readUsers();
-  res.json(db.users.map(({ id, username, displayName, avatar, color, role, school, age, locked, failedLogins, lastLogin, createdAt }) =>
-    ({ id, username, displayName, avatar, color, role, school, age, locked, failedLogins, lastLogin, createdAt })
-  ));
+app.get('/api/admin/friends', requireAdmin, async (req, res) => {
+  const users = await User.find({}, '-passwordHash');
+  res.json(users);
 });
 
 app.post('/api/admin/friends', requireAdmin, async (req, res) => {
@@ -471,91 +429,82 @@ app.post('/api/admin/friends', requireAdmin, async (req, res) => {
   const scan = scanObject({ displayName, username, school: school||'' });
   if (!scan.safe) return res.status(400).json({ error: 'Name/username contains inappropriate content.' });
 
-  const db = readUsers();
-  if (db.users.find(u => u.username.toLowerCase() === username.toLowerCase())) return res.status(409).json({ error: 'Username taken.' });
+  const uname = username.toLowerCase().replace(/\s+/g, '');
+  const exists = await User.findOne({ username: uname });
+  if (exists) return res.status(409).json({ error: 'Username taken.' });
 
   const AVATARS = ['🐱','🐶','🐸','🦊','🐼','🐨','🦁','🐯','🐺','🦝','🐻','🐮','🦄','🐙','🦋'];
-  const newUser = {
-    id: Date.now(),
-    username: username.toLowerCase().replace(/\s+/g, ''),
-    displayName,
+  const newUser = await User.create({
+    username: uname, displayName,
     avatar: avatar || AVATARS[Math.floor(Math.random()*AVATARS.length)],
     color: color || '#3D7DCA',
     role: 'friend',
     school: school || '',
     age: age || null,
-    failedLogins: 0,
-    locked: false,
     passwordHash: await bcrypt.hash(password, 10),
-    createdAt: new Date().toISOString()
-  };
-  db.users.push(newUser);
-  writeUsers(db);
-  const { passwordHash: _, ...safe } = newUser;
+  });
+  const { passwordHash: _, ...safe } = newUser.toObject();
   res.json(safe);
 });
 
-app.delete('/api/admin/friends/:id', requireAdmin, (req, res) => {
-  const db   = readUsers();
-  const user = db.users.find(u => u.id === Number(req.params.id));
+app.delete('/api/admin/friends/:id', requireAdmin, async (req, res) => {
+  const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'Not found.' });
   if (user.role === 'owner') return res.status(403).json({ error: "Can't remove Jose!" });
-  db.users = db.users.filter(u => u.id !== Number(req.params.id));
-  writeUsers(db);
+  await user.deleteOne();
   res.json({ ok: true });
 });
 
 app.put('/api/admin/friends/:id/password', requireAdmin, async (req, res) => {
   const { password } = req.body;
   if (!password) return res.status(400).json({ error: 'Need a new password.' });
-  const db   = readUsers();
-  const user = db.users.find(u => u.id === Number(req.params.id));
+  const user = await User.findById(req.params.id);
   if (!user) return res.status(404).json({ error: 'Not found.' });
   user.passwordHash = await bcrypt.hash(password, 10);
-  writeUsers(db);
+  await user.save();
   res.json({ ok: true });
 });
 
 // ── Content ───────────────────────────────────────────────────────────────────
-app.post('/api/admin/gallery', requireAdmin, upload.single('image'), (req, res) => {
+app.post('/api/admin/gallery', requireAdmin, upload.single('image'), async (req, res) => {
   const url = req.file ? `/uploads/${req.file.filename}` : (req.body.url || '').trim();
   if (!url) return res.status(400).json({ error: 'Provide an image file or URL.' });
-  const data  = readData();
-  const entry = { id: Date.now(), url, caption: req.body.caption||'', createdAt: new Date().toISOString() };
-  data.gallery.push(entry);
-  writeData(data);
+  const entry = await GalleryItem.create({ url, caption: req.body.caption||'' });
   res.json(entry);
 });
-app.delete('/api/admin/gallery/:id', requireAdmin, (req, res) => {
-  const data = readData();
-  const item = data.gallery.find(g => g.id === Number(req.params.id));
+
+app.delete('/api/admin/gallery/:id', requireAdmin, async (req, res) => {
+  const item = await GalleryItem.findById(req.params.id);
   if (!item) return res.status(404).json({ error: 'Not found.' });
-  const fp = path.join(__dirname, item.url.replace('/', ''));
-  if (fs.existsSync(fp)) fs.unlinkSync(fp);
-  data.gallery = data.gallery.filter(g => g.id !== Number(req.params.id));
-  writeData(data);
+  if (item.url.startsWith('/uploads/')) {
+    const fp = path.join(__dirname, item.url.slice(1));
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  }
+  await item.deleteOne();
   res.json({ ok: true });
 });
-app.post('/api/admin/pokemon', requireAdmin, upload.single('image'), (req, res) => {
-  const data  = readData();
+
+app.post('/api/admin/pokemon', requireAdmin, upload.single('image'), async (req, res) => {
   const imgUrl = req.file ? `/uploads/${req.file.filename}` : (req.body.url || '').trim() || null;
-  const entry = { id: Date.now(), name: req.body.name||'Unknown', type: req.body.type||'Normal', nickname: req.body.nickname||'', level: Number(req.body.level)||1, url: imgUrl, createdAt: new Date().toISOString() };
-  data.pokemon.push(entry);
-  writeData(data);
+  const entry = await Pokemon.create({
+    name: req.body.name||'Unknown', type: req.body.type||'Normal',
+    nickname: req.body.nickname||'', level: Number(req.body.level)||1, url: imgUrl
+  });
   res.json(entry);
 });
-app.delete('/api/admin/pokemon/:id', requireAdmin, (req, res) => {
-  const data = readData();
-  data.pokemon = data.pokemon.filter(p => p.id !== Number(req.params.id));
-  writeData(data);
+
+app.delete('/api/admin/pokemon/:id', requireAdmin, async (req, res) => {
+  const p = await Pokemon.findById(req.params.id);
+  if (!p) return res.status(404).json({ error: 'Not found.' });
+  await p.deleteOne();
   res.json({ ok: true });
 });
-app.post('/api/admin/posts', requireAdmin, upload.single('media'), (req, res) => {
+
+app.post('/api/admin/posts', requireAdmin, upload.single('media'), async (req, res) => {
   const scan = scanObject({ title: req.body.title||'', body: req.body.body||'' });
   if (!scan.safe) return res.status(400).json({ error: 'Post contains inappropriate content.' });
-  const data  = readData();
-  let mediaUrl = null;
-  let mediaType = null;
+
+  let mediaUrl = null, mediaType = null;
   if (req.file) {
     mediaUrl  = `/uploads/${req.file.filename}`;
     mediaType = req.file.mimetype.startsWith('video/') ? 'video' : 'image';
@@ -563,15 +512,18 @@ app.post('/api/admin/posts', requireAdmin, upload.single('media'), (req, res) =>
     mediaUrl  = req.body.mediaUrl.trim();
     mediaType = /\.(mp4|webm|mov|avi)$/i.test(mediaUrl) || mediaUrl.includes('youtube') || mediaUrl.includes('youtu.be') ? 'video' : 'image';
   }
-  const entry = { id: Date.now(), title: req.body.title||'New Post', body: req.body.body||'', mediaUrl, mediaType, createdAt: new Date().toISOString() };
-  data.posts.unshift(entry);
-  writeData(data);
+  const entry = await Post.create({ title: req.body.title||'New Post', body: req.body.body||'', mediaUrl, mediaType });
   res.json(entry);
 });
-app.delete('/api/admin/posts/:id', requireAdmin, (req, res) => {
-  const data = readData();
-  data.posts = data.posts.filter(p => p.id !== Number(req.params.id));
-  writeData(data);
+
+app.delete('/api/admin/posts/:id', requireAdmin, async (req, res) => {
+  const p = await Post.findById(req.params.id);
+  if (!p) return res.status(404).json({ error: 'Not found.' });
+  if (p.mediaUrl && p.mediaUrl.startsWith('/uploads/')) {
+    const fp = path.join(__dirname, p.mediaUrl.slice(1));
+    if (fs.existsSync(fp)) fs.unlinkSync(fp);
+  }
+  await p.deleteOne();
   res.json({ ok: true });
 });
 
@@ -579,10 +531,7 @@ app.delete('/api/admin/posts/:id', requireAdmin, (req, res) => {
 app.post('/api/studio/generate', requireAdmin, async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'No prompt provided.' });
-
   try {
-    const { chat } = require('./agent');
-    // Reuse agent's Anthropic client via a direct SDK call
     const Anthropic = require('@anthropic-ai/sdk');
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const msg = await client.messages.create({
