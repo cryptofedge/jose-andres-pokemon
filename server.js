@@ -207,6 +207,14 @@ app.post('/api/auth/login', loginLimiter, async (req, res) => {
   res.json({ token, user: { id: user.id, displayName: user.displayName, avatar: user.avatar, color: user.color, role: user.role } });
 });
 
+// ── Session restore ───────────────────────────────────────────────────────────
+app.get('/api/auth/me', requireToken, (req, res) => {
+  const db   = readUsers();
+  const user = db.users.find(u => u.id === req.user.id);
+  if (!user || user.locked) return res.status(401).json({ error: 'Session invalid.' });
+  res.json({ id: user.id, displayName: user.displayName, avatar: user.avatar, color: user.color, role: user.role });
+});
+
 // ── Account request (age gate + parental consent + safety scan) ───────────────
 app.post('/api/auth/request-account', async (req, res) => {
   const ip = getIP(req);
