@@ -48,7 +48,7 @@ const T = {
 
   // AGENT
   agent_ph:    { en:'Ask about Pokemon…', es:'Pregunta sobre Pokémon…', fr:'Posez une question sur Pokémon…', pt:'Pergunte sobre Pokémon…', yo:'Beere nipa Pokémon…', zh:'询问宝可梦…', ar:'اسأل عن بوكيمون…' },
-  agent_greet: { en:"Pika pika! Hi! I'm PIKAFELLITO, your Pokemon buddy! ⚡ What Pokemon question do you have?", es:"¡Pika pika! ¡Hola! ¡Soy PIKAFELLITO, tu amigo Pokémon! ⚡ ¿Qué pregunta tienes sobre Pokémon?", fr:"Pika pika ! Salut ! Je suis PIKAFELLITO, ton ami Pokémon ! ⚡ Quelle question as-tu sur Pokémon ?", pt:"Pika pika! Oi! Sou PIKAFELLITO, seu amigo Pokémon! ⚡ Que pergunta você tem sobre Pokémon?", yo:"Pika pika! Ẹ káàbọ̀! Mo jẹ PIKAFELLITO, ọrẹ Pokémon rẹ! ⚡ Kini ibeere rẹ nipa Pokémon?", zh:"皮卡皮卡！你好！我是PIKAFELLITO，你的宝可梦伙伴！⚡ 你有什么关于宝可梦的问题？", ar:"بيكا بيكا! مرحباً! أنا PIKAFELLITO، رفيق بوكيمون الخاص بك! ⚡ ما هو سؤالك عن بوكيمون؟" },
+  agent_greet: { en:"¡Hola! I'm Profesor Justin, your Pokemon teacher! 🎓 What Pokemon question do you have?", es:"¡Hola! ¡Soy el Profesor Justin, tu maestro Pokémon! 🎓 ¿Qué pregunta tienes sobre Pokémon?", fr:"Bonjour ! Je suis le Professeur Justin, ton enseignant Pokémon ! 🎓 Quelle question as-tu sur Pokémon ?", pt:"Olá! Sou o Professor Justin, seu professor Pokémon! 🎓 Que pergunta você tem sobre Pokémon?", yo:"Ẹ káàbọ̀! Mo jẹ Olùkọ́ Justin, olùkọ́ Pokémon rẹ! 🎓 Kini ibeere rẹ nipa Pokémon?", zh:"你好！我是贾斯汀教授，你的宝可梦老师！🎓 你有什么关于宝可梦的问题？", ar:"مرحباً! أنا البروفيسور جاستن، معلم بوكيمون الخاص بك! 🎓 ما هو سؤالك عن بوكيمون؟" },
 
   // FOOTER
   footer_report: { en:'🚨 Report Something Wrong', es:'🚨 Reportar Algo Incorrecto', fr:'🚨 Signaler Quelque Chose', pt:'🚨 Reportar Algo Errado', yo:'🚨 Ròyìn Ohun Ti Kò Tọ', zh:'🚨 举报问题', ar:'🚨 الإبلاغ عن مشكلة' },
