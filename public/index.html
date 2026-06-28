@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jose Andres' Pokemon World ⚡</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <!-- ── POKEBALL LOADER ── -->
+  <div id="loader">
+    <div class="pokeball-loader">
+      <div class="pb-top"></div>
+      <div class="pb-band"><div class="pb-button"></div></div>
+      <div class="pb-bottom"></div>
+    </div>
+    <p class="loader-text">Loading Pokemon World…</p>
+  </div>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <span class="pokeball-icon">⚪</span>
+        <div>
+          <h1>Jose Andres</h1>
+          <p>Pokemon Trainer · Age 10</p>
+        </div>
+      </div>
+      <nav>
+        <a href="#home">Home</a>
+        <a href="#pokemon">My Team</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#posts">Updates</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ── HERO ── -->
+  <section id="home" class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">⚡ Pokemon Trainer</div>
+      <h2>Welcome to My<br/><span class="yellow">Pokemon World!</span></h2>
+      <p>Hi! I'm Jose Andres and I love Pokemon! Check out my team, my pics, and everything Pokemon!</p>
+      <div class="hero-stats">
+        <div class="stat-card" id="stat-caught">
+          <span class="stat-num" id="pokemon-count">0</span>
+          <span class="stat-label">Pokemon Caught</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="gallery-count">0</span>
+          <span class="stat-label">Photos</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-num" id="post-count">0</span>
+          <span class="stat-label">Updates</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-art">
+      <div class="pokeball-big">
+        <div class="pb-top"></div>
+        <div class="pb-band"><div class="pb-button"></div></div>
+        <div class="pb-bottom"></div>
+      </div>
+      <div class="floating-pokemon">
+        <span>⚡</span><span>🔥</span><span>💧</span><span>🌿</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MY TEAM ── -->
+  <section id="pokemon" class="section">
+    <div class="section-header">
+      <h2>⚔️ My Pokemon Team</h2>
+      <p>These are my best Pokemon!</p>
+    </div>
+    <div id="pokemon-grid" class="pokemon-grid">
+      <div class="empty-state">
+        <div class="pokeball-empty"></div>
+        <p>No Pokemon yet… check back soon!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── GALLERY ── -->
+  <section id="gallery" class="section alt-bg">
+    <div class="section-header">
+      <h2>📸 My Gallery</h2>
+      <p>Photos from my Pokemon adventures!</p>
+    </div>
+    <div id="gallery-grid" class="gallery-grid">
+      <div class="empty-state">
+        <p>No photos yet!</p>
+      </div>
+    </div>
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox hidden">
+      <button id="lb-close">✕</button>
+      <img id="lb-img" src="" alt="" />
+      <p id="lb-caption"></p>
+    </div>
+  </section>
+
+  <!-- ── UPDATES ── -->
+  <section id="posts" class="section">
+    <div class="section-header">
+      <h2>📢 Latest Updates</h2>
+      <p>What Jose Andres has been up to!</p>
+    </div>
+    <div id="posts-list" class="posts-list">
+      <div class="empty-state"><p>No updates yet!</p></div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p>⚡ Jose Andres' Pokemon World · Made with ❤️ &amp; Pokeballs ⚡</p>
+    <p class="footer-sub">Gotta catch 'em all!</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

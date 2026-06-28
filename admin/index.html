@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jose's Admin Panel 🔑</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --red: #E3350D; --yellow: #FFCB05; --blue: #3D7DCA;
+      --dark: #1a1a2e; --darker: #0f0f1a; --green: #27ae60;
+      --font-pixel: 'Press Start 2P', cursive;
+      --font-body: 'Nunito', sans-serif;
+      --radius: 14px;
+    }
+    body {
+      font-family: var(--font-body);
+      background: var(--darker);
+      color: #fff;
+      min-height: 100vh;
+    }
+
+    /* ── Login Screen ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .login-box {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid var(--yellow);
+      border-radius: var(--radius);
+      padding: 48px 40px;
+      width: 100%; max-width: 400px;
+      text-align: center;
+    }
+    .pokeball-icon { font-size: 64px; margin-bottom: 16px; }
+    .login-title {
+      font-family: var(--font-pixel);
+      font-size: 11px;
+      color: var(--yellow);
+      margin-bottom: 8px;
+      line-height: 1.8;
+    }
+    .login-sub { font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 32px; }
+    .login-box input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      font-family: var(--font-pixel);
+      font-size: 12px;
+      text-align: center;
+      letter-spacing: 3px;
+      margin-bottom: 16px;
+    }
+    .login-box input:focus { outline: none; border-color: var(--yellow); }
+
+    /* ── Main Layout ── */
+    #main-panel { display: none; }
+    .admin-header {
+      background: var(--red);
+      padding: 0 32px;
+      height: 64px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .admin-header h1 {
+      font-family: var(--font-pixel);
+      font-size: 11px;
+      color: var(--yellow);
+    }
+    .logout-btn {
+      background: rgba(255,255,255,0.15);
+      border: none; color: #fff;
+      padding: 8px 16px; border-radius: 999px;
+      cursor: pointer; font-size: 13px;
+    }
+
+    .admin-body {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex; gap: 8px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      padding: 10px 22px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,0.15);
+      background: transparent;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: 700;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--yellow);
+      border-color: var(--yellow);
+      color: #000;
+    }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Cards / Forms ── */
+    .panel-card {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .panel-card h3 {
+      font-family: var(--font-pixel);
+      font-size: 10px;
+      color: var(--yellow);
+      margin-bottom: 20px;
+    }
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-row.single { grid-template-columns: 1fr; }
+    label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 6px;
+    }
+    input[type=text], input[type=number], select, textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--yellow);
+    }
+    textarea { resize: vertical; min-height: 100px; }
+    select option { background: #222; }
+
+    .file-drop {
+      border: 2px dashed rgba(255,203,5,0.4);
+      border-radius: var(--radius);
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 16px;
+    }
+    .file-drop:hover { background: rgba(255,203,5,0.05); }
+    .file-drop input[type=file] { display: none; }
+    .file-drop .drop-icon { font-size: 36px; margin-bottom: 8px; }
+    .file-drop p { color: rgba(255,255,255,0.5); font-size: 13px; }
+    .file-drop .selected-name { color: var(--yellow); font-weight: 700; margin-top: 8px; }
+    #preview-img {
+      max-width: 160px;
+      border-radius: 10px;
+      margin-top: 12px;
+      display: none;
+    }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 12px 28px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: 900;
+      font-size: 15px;
+      transition: transform 0.15s, opacity 0.15s;
+    }
+    .btn:hover { transform: scale(1.04); }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn-primary { background: var(--yellow); color: #000; }
+    .btn-red     { background: var(--red);    color: #fff; }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 12px;
+    }
+
+    /* ── Status toast ── */
+    #toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--green);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 14px;
+      transition: transform 0.3s;
+      z-index: 200;
+      pointer-events: none;
+    }
+    #toast.error { background: var(--red); }
+    #toast.show  { transform: translateX(-50%) translateY(0); }
+
+    /* ── Item lists ── */
+    .item-list { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+    .item-row {
+      display: flex; align-items: center; gap: 14px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      padding: 12px 16px;
+    }
+    .item-row img {
+      width: 56px; height: 56px;
+      object-fit: cover; border-radius: 8px;
+    }
+    .item-row .item-info { flex: 1; }
+    .item-row .item-name { font-weight: 700; font-size: 15px; }
+    .item-row .item-meta { font-size: 12px; color: rgba(255,255,255,0.4); }
+    .empty-msg { color: rgba(255,255,255,0.3); font-size: 14px; text-align: center; padding: 24px; }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="pokeball-icon">🔴</div>
+    <div class="login-title">Jose's Admin Panel</div>
+    <div class="login-sub">Enter your trainer password</div>
+    <input type="password" id="pwd-input" placeholder="••••••••••" />
+    <button class="btn btn-primary" style="width:100%" onclick="login()">Enter ⚡</button>
+    <p id="login-error" style="color:#E3350D;font-size:12px;margin-top:12px;display:none;">Wrong password, trainer!</p>
+  </div>
+</div>
+
+<!-- ── MAIN PANEL ── -->
+<div id="main-panel">
+  <div class="admin-header">
+    <h1>⚡ Admin Panel</h1>
+    <button class="logout-btn" onclick="logout()">Logout 👋</button>
+  </div>
+
+  <div class="admin-body">
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('tab-pokemon', this)">⚔️ My Pokemon</button>
+      <button class="tab-btn" onclick="switchTab('tab-gallery', this)">📸 Gallery</button>
+      <button class="tab-btn" onclick="switchTab('tab-posts', this)">📢 Posts</button>
+    </div>
+
+    <!-- ── TAB: Pokemon ── -->
+    <div id="tab-pokemon" class="tab-panel active">
+      <div class="panel-card">
+        <h3>➕ Add a Pokemon</h3>
+        <div class="form-row">
+          <div>
+            <label>Pokemon Name *</label>
+            <input type="text" id="pk-name" placeholder="e.g. Pikachu" />
+          </div>
+          <div>
+            <label>Nickname</label>
+            <input type="text" id="pk-nickname" placeholder="e.g. Sparky" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div>
+            <label>Type *</label>
+            <select id="pk-type">
+              <option value="Normal">Normal</option>
+              <option value="Fire">Fire 🔥</option>
+              <option value="Water">Water 💧</option>
+              <option value="Grass">Grass 🌿</option>
+              <option value="Electric">Electric ⚡</option>
+              <option value="Psychic">Psychic 🔮</option>
+              <option value="Ice">Ice ❄️</option>
+              <option value="Dragon">Dragon 🐉</option>
+              <option value="Dark">Dark 🌑</option>
+              <option value="Fighting">Fighting 🥊</option>
+              <option value="Poison">Poison ☠️</option>
+              <option value="Ground">Ground 🏔️</option>
+              <option value="Flying">Flying 🕊️</option>
+              <option value="Bug">Bug 🐛</option>
+              <option value="Rock">Rock 🪨</option>
+              <option value="Ghost">Ghost 👻</option>
+              <option value="Steel">Steel ⚙️</option>
+              <option value="Fairy">Fairy ✨</option>
+            </select>
+          </div>
+          <div>
+            <label>Level</label>
+            <input type="number" id="pk-level" value="1" min="1" max="100" />
+          </div>
+        </div>
+        <div>
+          <label>Pokemon Image (optional)</label>
+          <div class="file-drop" onclick="document.getElementById('pk-img').click()">
+            <input type="file" id="pk-img" accept="image/*" onchange="previewFile(this,'pk-preview','pk-filename')" />
+            <div class="drop-icon">📷</div>
+            <p>Click to upload a Pokemon picture</p>
+            <p class="selected-name" id="pk-filename"></p>
+            <img id="pk-preview" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addPokemon()">Add Pokemon ⚡</button>
+      </div>
+
+      <div class="panel-card">
+        <h3>📋 My Pokemon Collection</h3>
+        <div id="pk-list" class="item-list"></div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Gallery ── -->
+    <div id="tab-gallery" class="tab-panel">
+      <div class="panel-card">
+        <h3>➕ Upload a Photo</h3>
+        <div>
+          <label>Photo *</label>
+          <div class="file-drop" onclick="document.getElementById('gal-img').click()">
+            <input type="file" id="gal-img" accept="image/*" onchange="previewFile(this,'gal-preview','gal-filename')" />
+            <div class="drop-icon">🖼️</div>
+            <p>Click to upload a photo</p>
+            <p class="selected-name" id="gal-filename"></p>
+            <img id="gal-preview" />
+          </div>
+        </div>
+        <div class="form-row single" style="margin-bottom:16px">
+          <div>
+            <label>Caption (optional)</label>
+            <input type="text" id="gal-caption" placeholder="Describe this photo…" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="uploadPhoto()">Upload Photo 📸</button>
+      </div>
+
+      <div class="panel-card">
+        <h3>🖼️ My Photos</h3>
+        <div id="gal-list" class="item-list"></div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Posts ── -->
+    <div id="tab-posts" class="tab-panel">
+      <div class="panel-card">
+        <h3>✏️ Write an Update</h3>
+        <div class="form-row single" style="margin-bottom:16px">
+          <div>
+            <label>Title *</label>
+            <input type="text" id="post-title" placeholder="e.g. I beat the Elite Four!" />
+          </div>
+        </div>
+        <div class="form-row single" style="margin-bottom:16px">
+          <div>
+            <label>Message *</label>
+            <textarea id="post-body" placeholder="Tell your friends what happened…"></textarea>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addPost()">Post Update 📢</button>
+      </div>
+
+      <div class="panel-card">
+        <h3>📋 My Posts</h3>
+        <div id="post-list" class="item-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="toast">✅ Done!</div>
+
+<script>
+let adminPassword = '';
+
+// ── Auth ──────────────────────────────────────────────────────────
+async function login() {
+  const pwd = document.getElementById('pwd-input').value;
+  try {
+    const res = await fetch('/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: pwd })
+    });
+    if (res.ok) {
+      adminPassword = pwd;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('main-panel').style.display = 'block';
+      loadAll();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  } catch {
+    showToast('Server offline — start node server.js', true);
+  }
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+
+function logout() {
+  adminPassword = '';
+  document.getElementById('main-panel').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('pwd-input').value = '';
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+function showToast(msg, error = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = error ? 'error show' : 'show';
+  setTimeout(() => t.className = error ? 'error' : '', 2800);
+}
+
+// ── File preview ──────────────────────────────────────────────────
+function previewFile(input, previewId, nameId) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById(nameId).textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = document.getElementById(previewId);
+    img.src = e.target.result;
+    img.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── Pokemon ───────────────────────────────────────────────────────
+async function addPokemon() {
+  const name = document.getElementById('pk-name').value.trim();
+  if (!name) return showToast('Pokemon needs a name!', true);
+
+  const fd = new FormData();
+  fd.append('name', name);
+  fd.append('nickname', document.getElementById('pk-nickname').value.trim());
+  fd.append('type', document.getElementById('pk-type').value);
+  fd.append('level', document.getElementById('pk-level').value);
+  const imgFile = document.getElementById('pk-img').files[0];
+  if (imgFile) fd.append('image', imgFile);
+
+  const res = await fetch('/api/admin/pokemon', {
+    method: 'POST',
+    headers: { 'x-admin-password': adminPassword },
+    body: fd
+  });
+  if (res.ok) {
+    showToast('⚡ Pokemon added!');
+    document.getElementById('pk-name').value = '';
+    document.getElementById('pk-nickname').value = '';
+    document.getElementById('pk-level').value = 1;
+    document.getElementById('pk-img').value = '';
+    document.getElementById('pk-preview').style.display = 'none';
+    document.getElementById('pk-filename').textContent = '';
+    loadPokemon();
+  } else {
+    showToast('Something went wrong!', true);
+  }
+}
+
+async function deletePokemon(id) {
+  if (!confirm('Remove this Pokemon?')) return;
+  await fetch(`/api/admin/pokemon/${id}`, {
+    method: 'DELETE',
+    headers: { 'x-admin-password': adminPassword }
+  });
+  showToast('Pokemon removed');
+  loadPokemon();
+}
+
+async function loadPokemon() {
+  const res = await fetch('/api/content');
+  const data = await res.json();
+  const list = data.pokemon || [];
+  const el = document.getElementById('pk-list');
+  if (!list.length) { el.innerHTML = '<div class="empty-msg">No Pokemon yet. Add some above!</div>'; return; }
+  el.innerHTML = list.map(p => `
+    <div class="item-row">
+      ${p.url ? `<img src="${p.url}" alt="${p.name}" />` : '<div style="width:56px;height:56px;background:rgba(255,255,255,0.08);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;">⭐</div>'}
+      <div class="item-info">
+        <div class="item-name">${p.name}${p.nickname ? ` <span style="color:rgba(255,255,255,0.4);font-size:12px;">"${p.nickname}"</span>` : ''}</div>
+        <div class="item-meta">${p.type} · Lv. ${p.level}</div>
+      </div>
+      <button class="btn btn-red btn-sm" onclick="deletePokemon(${p.id})">Remove</button>
+    </div>
+  `).join('');
+}
+
+// ── Gallery ───────────────────────────────────────────────────────
+async function uploadPhoto() {
+  const imgFile = document.getElementById('gal-img').files[0];
+  if (!imgFile) return showToast('Pick a photo first!', true);
+
+  const fd = new FormData();
+  fd.append('image', imgFile);
+  fd.append('caption', document.getElementById('gal-caption').value.trim());
+
+  const res = await fetch('/api/admin/gallery', {
+    method: 'POST',
+    headers: { 'x-admin-password': adminPassword },
+    body: fd
+  });
+  if (res.ok) {
+    showToast('📸 Photo uploaded!');
+    document.getElementById('gal-img').value = '';
+    document.getElementById('gal-caption').value = '';
+    document.getElementById('gal-preview').style.display = 'none';
+    document.getElementById('gal-filename').textContent = '';
+    loadGallery();
+  } else {
+    showToast('Upload failed!', true);
+  }
+}
+
+async function deletePhoto(id) {
+  if (!confirm('Delete this photo?')) return;
+  await fetch(`/api/admin/gallery/${id}`, {
+    method: 'DELETE',
+    headers: { 'x-admin-password': adminPassword }
+  });
+  showToast('Photo deleted');
+  loadGallery();
+}
+
+async function loadGallery() {
+  const res = await fetch('/api/content');
+  const data = await res.json();
+  const list = data.gallery || [];
+  const el = document.getElementById('gal-list');
+  if (!list.length) { el.innerHTML = '<div class="empty-msg">No photos yet. Upload one above!</div>'; return; }
+  el.innerHTML = list.map(g => `
+    <div class="item-row">
+      <img src="${g.url}" alt="${g.caption || 'Photo'}" />
+      <div class="item-info">
+        <div class="item-name">${g.caption || '(no caption)'}</div>
+        <div class="item-meta">${new Date(g.createdAt).toLocaleDateString()}</div>
+      </div>
+      <button class="btn btn-red btn-sm" onclick="deletePhoto(${g.id})">Delete</button>
+    </div>
+  `).join('');
+}
+
+// ── Posts ─────────────────────────────────────────────────────────
+async function addPost() {
+  const title = document.getElementById('post-title').value.trim();
+  const body  = document.getElementById('post-body').value.trim();
+  if (!title || !body) return showToast('Need a title and message!', true);
+
+  const res = await fetch('/api/admin/posts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+    body: JSON.stringify({ title, body })
+  });
+  if (res.ok) {
+    showToast('📢 Post published!');
+    document.getElementById('post-title').value = '';
+    document.getElementById('post-body').value = '';
+    loadPosts();
+  } else {
+    showToast('Something went wrong!', true);
+  }
+}
+
+async function deletePost(id) {
+  if (!confirm('Delete this post?')) return;
+  await fetch(`/api/admin/posts/${id}`, {
+    method: 'DELETE',
+    headers: { 'x-admin-password': adminPassword }
+  });
+  showToast('Post deleted');
+  loadPosts();
+}
+
+async function loadPosts() {
+  const res = await fetch('/api/content');
+  const data = await res.json();
+  const list = data.posts || [];
+  const el = document.getElementById('post-list');
+  if (!list.length) { el.innerHTML = '<div class="empty-msg">No posts yet. Write one above!</div>'; return; }
+  el.innerHTML = list.map(p => `
+    <div class="item-row">
+      <div class="item-info">
+        <div class="item-name">${p.title}</div>
+        <div class="item-meta">${new Date(p.createdAt).toLocaleDateString()} · ${p.body.slice(0,60)}${p.body.length > 60 ? '…' : ''}</div>
+      </div>
+      <button class="btn btn-red btn-sm" onclick="deletePost(${p.id})">Delete</button>
+    </div>
+  `).join('');
+}
+
+function loadAll() { loadPokemon(); loadGallery(); loadPosts(); }
+</script>
+</body>
+</html>
