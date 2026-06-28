@@ -224,8 +224,20 @@ function buildLangPicker() {
   const picker = document.getElementById('lang-picker');
   if (!picker) return;
   picker.innerHTML = Object.entries(LANGS).map(([code, info]) =>
-    `<button class="lang-opt${code === currentLang ? ' active' : ''}" data-lang="${code}" onclick="setLang('${code}')">${info.flag} ${info.label}</button>`
+    `<button class="lang-opt${code === currentLang ? ' active' : ''}" data-lang="${code}">${info.flag} ${info.label}</button>`
   ).join('');
+  // Use event listeners with stopPropagation so document handler can't race on mobile
+  picker.querySelectorAll('.lang-opt').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      setLang(btn.dataset.lang);
+    });
+    btn.addEventListener('touchend', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      setLang(btn.dataset.lang);
+    });
+  });
 }
 
 function previewID(input, previewId) {

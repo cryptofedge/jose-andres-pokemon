@@ -84,7 +84,7 @@ function applyLang() {
   const greetBubble = document.querySelector('#agent-messages .msg-bubble[data-i18n="agent_greet"]');
   if (greetBubble) greetBubble.textContent = t('agent_greet');
   // RTL support
-  document.body.setAttribute('dir', currentLang === 'ar' ? 'rtl' : 'ltr');
+  // No full-page RTL — it breaks the fixed header/picker positioning on mobile
 }
 
 function setLang(lang) {
