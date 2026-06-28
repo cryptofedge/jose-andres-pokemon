@@ -568,6 +568,59 @@ app.post('/api/studio/generate', requireAdmin, async (req, res) => {
   }
 });
 
+// ── Editor AI Assistant ───────────────────────────────────────────────────────
+app.post('/api/admin/editor/ai', requireAdmin, async (req, res) => {
+  const { prompt, duration, currentSettings } = req.body;
+  if (!prompt) return res.status(400).json({ error: 'No prompt' });
+  try {
+    let apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      const doc = await SiteConfig.findOne({ key: 'ANTHROPIC_API_KEY' });
+      apiKey = doc?.value || '';
+    }
+    if (!apiKey) return res.status(400).json({ error: 'No Anthropic API key configured. Add it in the API Keys section.' });
+
+    const Anthropic = require('@anthropic-ai/sdk');
+    const client = new Anthropic({ apiKey });
+
+    const systemPrompt = `You are a video editing assistant for a Pokemon website.
+The user will describe what edits they want on a video.
+You must respond ONLY with a valid JSON object (no markdown, no explanation) with these fields:
+{
+  "trimStart": <number seconds or null>,
+  "trimEnd": <number seconds or null>,
+  "overlayText": <string or "">,
+  "overlayPosition": <"top"|"middle"|"bottom" or "bottom">,
+  "overlayColor": <hex color string like "#ffffff">,
+  "overlaySize": <number 12-120 or 48>,
+  "message": <short friendly confirmation message in English>
+}
+Video duration: ${duration || 'unknown'} seconds.
+Current settings: ${JSON.stringify(currentSettings || {})}.
+Only change fields the user mentioned. Keep others at current values.`;
+
+    const msg = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 500,
+      system: systemPrompt,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const text = msg.content[0].text.trim();
+    let parsed;
+    try {
+      parsed = JSON.parse(text);
+    } catch {
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      parsed = jsonMatch ? JSON.parse(jsonMatch[0]) : { message: text };
+    }
+    res.json(parsed);
+  } catch(e) {
+    console.error('Editor AI error:', e.message);
+    res.status(500).json({ error: 'AI error: ' + e.message });
+  }
+});
+
 // ── Video editor — trim + text overlay ───────────────────────────────────────
 const editStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -683,7 +736,7 @@ app.get('/api/admin/config', requireAdmin, async (req, res) => {
 });
 
 app.post('/api/admin/config', requireAdmin, async (req, res) => {
-  const allowed = ['YT_CLIENT_ID', 'YT_CLIENT_SECRET', 'IG_CLIENT_ID', 'IG_CLIENT_SECRET', 'TT_CLIENT_KEY', 'TT_CLIENT_SECRET', 'FB_APP_ID', 'FB_APP_SECRET'];
+  const allowed = ['ANTHROPIC_API_KEY', 'YT_CLIENT_ID', 'YT_CLIENT_SECRET', 'IG_CLIENT_ID', 'IG_CLIENT_SECRET', 'TT_CLIENT_KEY', 'TT_CLIENT_SECRET', 'FB_APP_ID', 'FB_APP_SECRET'];
   for (const [key, value] of Object.entries(req.body)) {
     if (!allowed.includes(key)) continue;
     await SiteConfig.findOneAndUpdate({ key }, { key, value, updatedAt: new Date() }, { upsert: true });

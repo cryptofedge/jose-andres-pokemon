@@ -1159,6 +1159,29 @@
             <button class="btn btn-primary" style="width:100%" onclick="sendToPublish()">🚀 Send to Publish Hub</button>
           </div>
 
+          <!-- AI Assistant -->
+          <div id="ai-assist-wrap" style="display:none;margin-bottom:20px">
+            <div class="panel-card" style="background:linear-gradient(135deg,rgba(139,92,246,0.12),rgba(59,130,246,0.08));border:1px solid rgba(139,92,246,0.25)">
+              <h3 class="panel-title" style="margin-bottom:14px">🤖 AI Editing Assistant</h3>
+              <p style="font-size:12px;color:rgba(255,255,255,0.4);margin:0 0 12px">Describe the edits you want in plain language and the AI will apply them automatically.</p>
+              <div id="ai-chat-log" style="max-height:200px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:8px"></div>
+              <div style="display:flex;gap:8px">
+                <input id="ai-prompt-input" class="form-input" style="flex:1" type="text"
+                  placeholder='e.g. "trim from 0:10 to 0:45 and add white text POKEMON BATTLE at the top"'
+                  onkeydown="if(event.key==='Enter')sendAiPrompt()" />
+                <button class="btn btn-primary" id="ai-send-btn" onclick="sendAiPrompt()" style="white-space:nowrap;background:linear-gradient(135deg,#8b5cf6,#6d28d9)">
+                  ✨ Ask AI
+                </button>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+                <button class="btn btn-ghost btn-xs" onclick="aiQuick('Trim to the best 30 seconds')">✂️ Best 30s</button>
+                <button class="btn btn-ghost btn-xs" onclick="aiQuick('Add white text POKEMON WORLD at the bottom')">💬 Add caption</button>
+                <button class="btn btn-ghost btn-xs" onclick="aiQuick('Remove the first 5 seconds')">⏩ Skip intro</button>
+                <button class="btn btn-ghost btn-xs" onclick="aiQuick('Add yellow text with my name at the top in size 64')">🏷️ Name tag</button>
+              </div>
+            </div>
+          </div>
+
           <!-- Process button -->
           <div id="process-btn-wrap" style="display:none">
             <button class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,#8b5cf6,#7c3aed)" id="process-btn" onclick="processVideo()">
@@ -1256,6 +1279,15 @@
           <div class="panel-card" style="margin-top:20px">
             <h3 class="panel-title">🔑 API Keys Setup</h3>
             <p style="font-size:13px;color:rgba(255,255,255,0.45);margin:0 0 16px">Enter your platform credentials here. These are stored securely in the database — you do NOT need access to Render.</p>
+
+            <div style="margin-bottom:20px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.07)">
+              <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(139,92,246,0.8);margin-bottom:8px">🤖 AI EDITING ASSISTANT (ANTHROPIC / CLAUDE)</div>
+              <p style="font-size:12px;color:rgba(255,255,255,0.35);margin:0 0 10px">Powers the AI assistant in the Editor tab. Get your key at console.anthropic.com</p>
+              <div>
+                <label class="form-label">Anthropic API Key</label>
+                <input id="cfg-ANTHROPIC_API_KEY" class="form-input" type="password" placeholder="sk-ant-api03-…" />
+              </div>
+            </div>
 
             <div style="margin-bottom:18px">
               <div style="font-size:11px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,0.4);margin-bottom:8px">▶ YOUTUBE (GOOGLE OAUTH)</div>
@@ -1992,8 +2024,9 @@ async function editorUploadFile(file) {
 function showEditorVideo(src, name) {
   const vid = document.getElementById('editor-video');
   vid.src = src;
-  document.getElementById('editor-stage').style.display = 'flex';
+  document.getElementById('editor-stage').style.display    = 'flex';
   document.getElementById('editor-playback').style.display = 'block';
+  document.getElementById('ai-assist-wrap').style.display  = 'block';
   document.getElementById('process-btn-wrap').style.display = 'block';
 }
 
@@ -2162,6 +2195,7 @@ function resetEditor() {
   document.getElementById('editor-dropzone').style.display = 'block';
   document.getElementById('editor-stage').style.display    = 'none';
   document.getElementById('editor-playback').style.display = 'none';
+  document.getElementById('ai-assist-wrap').style.display   = 'none';
   document.getElementById('process-btn-wrap').style.display = 'none';
   document.getElementById('upload-status-box').style.display = 'none';
   document.getElementById('process-status-box').style.display = 'none';
@@ -2338,12 +2372,70 @@ async function loadPublishHistory() {
   } catch(e) { /* silent */ }
 }
 
+// ── Editor AI Assistant ───────────────────────────────────────────
+function aiQuick(text) {
+  document.getElementById('ai-prompt-input').value = text;
+  sendAiPrompt();
+}
+
+async function sendAiPrompt() {
+  const input = document.getElementById('ai-prompt-input');
+  const prompt = input.value.trim();
+  if (!prompt) return;
+
+  const log = document.getElementById('ai-chat-log');
+  const btn = document.getElementById('ai-send-btn');
+
+  // User bubble
+  log.innerHTML += `<div style="align-self:flex-end;background:rgba(139,92,246,0.25);border:1px solid rgba(139,92,246,0.4);border-radius:12px 12px 4px 12px;padding:8px 12px;font-size:13px;max-width:85%">${prompt}</div>`;
+  input.value = '';
+  btn.disabled = true; btn.textContent = '⏳';
+  log.scrollTop = log.scrollHeight;
+
+  const currentSettings = {
+    trimStart:       document.getElementById('trim-start').value,
+    trimEnd:         document.getElementById('trim-end').value,
+    overlayText:     document.getElementById('overlay-text').value,
+    overlayPosition: document.getElementById('overlay-pos').value,
+    overlayColor:    document.getElementById('overlay-color').value,
+    overlaySize:     document.getElementById('overlay-size').value,
+  };
+
+  try {
+    const res  = await fetch('/api/admin/editor/ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+      body: JSON.stringify({ prompt, duration: editorDuration, currentSettings })
+    });
+    const data = await res.json();
+
+    if (data.error) throw new Error(data.error);
+
+    // Apply settings returned by AI
+    if (data.trimStart  != null) { document.getElementById('trim-start').value  = data.trimStart;  updateTrimUI(); }
+    if (data.trimEnd    != null) { document.getElementById('trim-end').value    = data.trimEnd;    updateTrimUI(); }
+    if (data.overlayText     != null) document.getElementById('overlay-text').value  = data.overlayText;
+    if (data.overlayPosition != null) document.getElementById('overlay-pos').value   = data.overlayPosition;
+    if (data.overlayColor    != null) document.getElementById('overlay-color').value = data.overlayColor;
+    if (data.overlaySize     != null) document.getElementById('overlay-size').value  = data.overlaySize;
+    updateOverlayPreview();
+
+    // AI bubble
+    log.innerHTML += `<div style="align-self:flex-start;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px 12px 12px 4px;padding:8px 12px;font-size:13px;max-width:85%">🤖 ${data.message || 'Done! Settings updated.'}</div>`;
+  } catch(e) {
+    log.innerHTML += `<div style="align-self:flex-start;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:8px 12px;font-size:12px;color:#f87171">❌ ${e.message}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ Ask AI';
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
 // ── API Keys ──────────────────────────────────────────────────────
 async function loadApiKeys() {
   try {
     const res = await fetch('/api/admin/config', { headers: { 'x-admin-password': adminPassword } });
     const cfg = await res.json();
-    ['YT_CLIENT_ID','YT_CLIENT_SECRET','FB_APP_ID','FB_APP_SECRET','TT_CLIENT_KEY','TT_CLIENT_SECRET'].forEach(k => {
+    ['ANTHROPIC_API_KEY','YT_CLIENT_ID','YT_CLIENT_SECRET','FB_APP_ID','FB_APP_SECRET','TT_CLIENT_KEY','TT_CLIENT_SECRET'].forEach(k => {
       const el = document.getElementById('cfg-' + k);
       if (el && cfg[k]) el.value = cfg[k];
     });
@@ -2351,7 +2443,7 @@ async function loadApiKeys() {
 }
 
 async function saveApiKeys() {
-  const keys = ['YT_CLIENT_ID','YT_CLIENT_SECRET','FB_APP_ID','FB_APP_SECRET','TT_CLIENT_KEY','TT_CLIENT_SECRET'];
+  const keys = ['ANTHROPIC_API_KEY','YT_CLIENT_ID','YT_CLIENT_SECRET','FB_APP_ID','FB_APP_SECRET','TT_CLIENT_KEY','TT_CLIENT_SECRET'];
   const body = {};
   keys.forEach(k => {
     const el = document.getElementById('cfg-' + k);
