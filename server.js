@@ -274,7 +274,7 @@ app.post('/api/auth/request-account', async (req, res) => {
   res.json({ ok: true });
 });
 
-// ── PIKAFEDGE Agent ───────────────────────────────────────────────────────────
+// ── PIKAFELLITO Agent ───────────────────────────────────────────────────────────
 const agentLimiter = rateLimit({
   windowMs: 60 * 1000,
   max: 20,
@@ -299,7 +299,7 @@ app.post('/api/agent/chat', agentLimiter, async (req, res) => {
     res.json({ reply: result.reply });
   } catch (err) {
     console.error('Agent error:', err.message);
-    res.status(500).json({ error: 'PIKAFEDGE is resting! Try again in a moment. 😴' });
+    res.status(500).json({ error: 'PIKAFELLITO is resting! Try again in a moment. 😴' });
   }
 });
 

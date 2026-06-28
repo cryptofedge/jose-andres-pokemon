@@ -368,7 +368,7 @@ async function submitReport() {
   }
 }
 
-// ── PIKAFEDGE Agent ───────────────────────────────────────────────
+// ── PIKAFELLITO Agent ───────────────────────────────────────────────
 const agentSessionId = `sess_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 let agentOpen = false;
 

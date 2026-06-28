@@ -1,6 +1,17 @@
 {
   "logs": [
     {
+      "id": 1782608427203,
+      "type": "login_success",
+      "userId": 2,
+      "username": "miguel",
+      "displayName": "Miguel",
+      "ip": "::1",
+      "detail": "Successful login",
+      "severity": "info",
+      "timestamp": "2026-06-28T01:00:27.203Z"
+    },
+    {
       "id": 1782606355062,
       "type": "login_fail",
       "userId": 1,

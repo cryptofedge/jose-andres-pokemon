@@ -1,6 +1,111 @@
 {
-  "posts": [],
-  "pokemon": [],
-  "gallery": [],
-  "favoriteTeam": []
+  "posts": [
+    {
+      "id": 1,
+      "title": "I got my first Pokemon card pack today!! 🎉",
+      "body": "Daddy took me to the store and I got a Scarlet & Violet booster pack. I pulled a CHARIZARD EX!!! It's so shiny and cool. I'm never trading it. Never ever ever. 🔥",
+      "createdAt": "2026-06-20T18:30:00.000Z"
+    },
+    {
+      "id": 2,
+      "title": "My favorite Pokemon is Pikachu ⚡",
+      "body": "I love Pikachu because he is Ash's best friend and he never gives up! I want a Pikachu backpack for school. Also Charizard is cool too but Pikachu is my NUMBER ONE. Ask PIKAFELLITO if you want to know more about Pikachu!",
+      "createdAt": "2026-06-18T14:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "title": "We went to Pokemon League at the game store! 🏆",
+      "body": "Papi brought me to the Pokemon League event at the card shop on Saturday. There were so many cards everywhere! I watched the big kids battle and it looked SO cool. I want to learn to play the card game. PIKAFELLITO is teaching me the rules!",
+      "createdAt": "2026-06-15T20:00:00.000Z"
+    }
+  ],
+  "pokemon": [
+    {
+      "id": 1,
+      "name": "Pikachu",
+      "type": "Electric",
+      "level": 25,
+      "nickname": "Sparky",
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png"
+    },
+    {
+      "id": 2,
+      "name": "Charizard",
+      "type": "Fire",
+      "level": 50,
+      "nickname": "Blaze",
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png"
+    },
+    {
+      "id": 3,
+      "name": "Eevee",
+      "type": "Normal",
+      "level": 12,
+      "nickname": "Cookie",
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png"
+    },
+    {
+      "id": 4,
+      "name": "Gengar",
+      "type": "Ghost",
+      "level": 36,
+      "nickname": "Spooky",
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png"
+    },
+    {
+      "id": 5,
+      "name": "Mewtwo",
+      "type": "Psychic",
+      "level": 70,
+      "nickname": "Boss",
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png"
+    },
+    {
+      "id": 6,
+      "name": "Togepi",
+      "type": "Fairy",
+      "level": 8,
+      "nickname": "Eggie",
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/175.png"
+    }
+  ],
+  "gallery": [
+    {
+      "id": 1,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png",
+      "caption": "My Pikachu card — got this one from Grandma! ⚡",
+      "createdAt": "2026-06-22T10:00:00.000Z"
+    },
+    {
+      "id": 2,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png",
+      "caption": "CHARIZARD EX I pulled from my booster pack!! 🔥🔥🔥",
+      "createdAt": "2026-06-20T19:00:00.000Z"
+    },
+    {
+      "id": 3,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/133.png",
+      "caption": "Eevee is the cutest Pokemon ever, don't @ me 🥺",
+      "createdAt": "2026-06-19T15:30:00.000Z"
+    },
+    {
+      "id": 4,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png",
+      "caption": "Mewtwo — the most powerful Pokemon! Papi helped me get this one.",
+      "createdAt": "2026-06-17T12:00:00.000Z"
+    },
+    {
+      "id": 5,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/94.png",
+      "caption": "Gengar is spooky but I love him 👻",
+      "createdAt": "2026-06-14T20:00:00.000Z"
+    },
+    {
+      "id": 6,
+      "url": "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/175.png",
+      "caption": "Togepi is my baby 🥚 I named her Eggie",
+      "createdAt": "2026-06-10T11:00:00.000Z"
+    }
+  ],
+  "favoriteTeam": [25, 6, 133, 94, 150, 175]
 }

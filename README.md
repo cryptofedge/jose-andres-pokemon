@@ -54,14 +54,14 @@ Or create a `.env` file and load it with a package like `dotenv`.
 
 ---
 
-## ⚡ PIKAFEDGE — AI Pokemon Agent
+## ⚡ PIKAFELLITO — AI Pokemon Agent
 
 An AI companion built into the public site, powered by **FEDGE 2.O** and the **Claude API**.
 
 | Feature | Detail |
 |---|---|
 | **Model** | Claude Haiku 4.5 (fast & kid-optimized) |
-| **Personality** | Fun, energetic Pokemon expert named PIKAFEDGE |
+| **Personality** | Fun, energetic Pokemon expert named PIKAFELLITO |
 | **Safety** | Kid-safe system prompt · grooming phrase filter · 20 msg/min rate limit |
 | **Memory** | Per-session conversation history (30 min TTL) |
 | **Flagging** | Unsafe messages blocked and logged to Safety dashboard |
@@ -96,7 +96,7 @@ jose-andres-pokemon/
 │   └── reports.json  # Safety reports
 ├── uploads/          # Uploaded images (git-ignored)
 ├── server.js         # Express backend
-├── agent.js          # PIKAFEDGE AI agent (FEDGE 2.O)
+├── agent.js          # PIKAFELLITO AI agent (FEDGE 2.O)
 ├── safety.js         # Child safety filter
 └── package.json
 ```
