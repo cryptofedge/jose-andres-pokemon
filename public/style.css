@@ -637,9 +637,10 @@ footer p {
   .hero-badge { font-size: 8px; }
   .hero-content h2 { font-size: clamp(12px, 5vw, 18px); }
   .hero-content p { font-size: 15px; margin-bottom: 28px; }
-  .hero-stats { justify-content: center; gap: 10px; }
-  .stat-card { padding: 14px 18px; }
-  .stat-num  { font-size: 22px; }
+  .hero-stats { justify-content: center; gap: 8px; flex-wrap: nowrap; }
+  .stat-card { padding: 12px 14px; flex: 1; min-width: 0; }
+  .stat-num  { font-size: 20px; }
+  .stat-label { font-size: 9px; }
 
   /* Sections */
   .section { padding: 52px 16px; }
@@ -673,5 +674,4 @@ footer p {
 @media (max-width: 380px) {
   .pokemon-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .gallery-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .hero-stats { flex-direction: column; align-items: center; }
 }
