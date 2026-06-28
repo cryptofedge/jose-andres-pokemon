@@ -355,9 +355,21 @@
     }
     .trim-labels { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
 
-    .editor-controls { display: flex; flex-direction: column; gap: 14px; }
-    .ctrl-section { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 16px; }
-    .ctrl-section h4 { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+    .editor-controls { display: flex; flex-direction: column; gap: 16px; }
+    .ctrl-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      backdrop-filter: blur(12px);
+    }
+    .ctrl-section:hover { border-color: rgba(255,203,5,0.2); }
+    .ctrl-section h4 {
+      font-size: 10px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 1.5px; color: rgba(255,255,255,0.35);
+      margin-bottom: 14px; display: flex; align-items: center; gap: 6px;
+    }
+    .ctrl-section h4::before { content: ''; display: block; width: 3px; height: 14px; background: var(--yellow); border-radius: 2px; }
 
     .time-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .time-inputs label { font-size: 11px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
@@ -1049,7 +1061,7 @@
       <div class="editor-layout">
 
         <!-- Left: stage + trim -->
-        <div>
+        <div class="panel-card" style="padding:20px">
           <!-- Upload zone (shown when no video loaded) -->
           <div id="editor-dropzone" class="video-drop-zone" onclick="document.getElementById('editor-file-input').click()" ondragover="editorDragOver(event)" ondrop="editorDrop(event)">
             <input type="file" id="editor-file-input" accept="video/*" style="display:none" onchange="editorLoadFile(this)" />
