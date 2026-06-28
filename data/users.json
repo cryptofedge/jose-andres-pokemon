@@ -1,0 +1,20 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "jose",
+      "displayName": "Jose Andres",
+      "avatar": "⭐",
+      "color": "#FFCB05",
+      "role": "owner",
+      "school": "",
+      "age": 6,
+      "failedLogins": 1,
+      "locked": false,
+      "passwordHash": "$2b$10$Vdou2kqzjWcP7TgHl1TGyOzxrnKpOuF.fF6QMazqxDcJGyRMZMriy",
+      "createdAt": "2026-06-28T00:23:27.265Z",
+      "lastLogin": "2026-06-28T00:24:37.182Z",
+      "lastIP": "::ffff:127.0.0.1"
+    }
+  ]
+}

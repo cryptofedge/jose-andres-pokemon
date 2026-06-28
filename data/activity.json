@@ -1,0 +1,26 @@
+{
+  "logs": [
+    {
+      "id": 1782606355062,
+      "type": "login_fail",
+      "userId": 1,
+      "username": "jose",
+      "displayName": "Jose Andres",
+      "ip": "::1",
+      "detail": "Wrong password (attempt 1/5)",
+      "severity": "warning",
+      "timestamp": "2026-06-28T00:25:55.062Z"
+    },
+    {
+      "id": 1782606277183,
+      "type": "login_success",
+      "userId": 1,
+      "username": "jose",
+      "displayName": "Jose Andres",
+      "ip": "::ffff:127.0.0.1",
+      "detail": "Successful login",
+      "severity": "info",
+      "timestamp": "2026-06-28T00:24:37.183Z"
+    }
+  ]
+}

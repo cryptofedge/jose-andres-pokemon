@@ -142,5 +142,231 @@ function renderPosts(list) {
   `).join('');
 }
 
+// ── Auth state ────────────────────────────────────────────────────
+let currentUser = null;
+
+function getToken() { return localStorage.getItem('poke_token'); }
+function setToken(t) { localStorage.setItem('poke_token', t); }
+function clearToken() { localStorage.removeItem('poke_token'); }
+
+// Restore session on load
+(async function restoreSession() {
+  const token = getToken();
+  if (!token) return;
+  try {
+    const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+    if (res.ok) {
+      const user = await res.json();
+      setLoggedIn(user);
+    } else {
+      clearToken();
+    }
+  } catch { clearToken(); }
+})();
+
+function setLoggedIn(user) {
+  currentUser = user;
+  document.getElementById('header-avatar').textContent = user.avatar;
+  document.getElementById('header-name').textContent   = user.displayName;
+  document.getElementById('header-user').classList.remove('hidden');
+  document.getElementById('btn-login').classList.add('hidden');
+}
+
+function logout() {
+  clearToken();
+  currentUser = null;
+  document.getElementById('header-user').classList.add('hidden');
+  document.getElementById('btn-login').classList.remove('hidden');
+}
+
+// ── Modal system ──────────────────────────────────────────────────
+function openModal(type) {
+  document.getElementById('modal-overlay').classList.remove('hidden');
+  ['login','signup','report'].forEach(t => {
+    document.getElementById(`modal-${t}`).classList.add('hidden');
+  });
+  document.getElementById(`modal-${type}`).classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.add('hidden');
+  ['login','signup','report'].forEach(t => document.getElementById(`modal-${t}`).classList.add('hidden'));
+  document.body.style.overflow = '';
+}
+
+document.getElementById('modal-overlay').addEventListener('click', closeModal);
+
+// ── Login ─────────────────────────────────────────────────────────
+async function doLogin() {
+  const username = document.getElementById('login-username').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('login-error');
+  errEl.classList.add('hidden');
+
+  try {
+    const res  = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error;
+      errEl.classList.remove('hidden');
+      return;
+    }
+    setToken(data.token);
+    setLoggedIn(data.user);
+    closeModal();
+    showWelcome(data.user);
+  } catch {
+    errEl.textContent = 'Could not connect to server.';
+    errEl.classList.remove('hidden');
+  }
+}
+
+document.getElementById('login-password').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function showWelcome(user) {
+  const isOwner = user.role === 'owner';
+  document.getElementById('wb-avatar').textContent = user.avatar;
+  document.getElementById('wb-msg').textContent =
+    isOwner
+      ? `Welcome back, ${user.displayName}! ⭐ It's your world!`
+      : `Hey ${user.displayName}! 🎉 Welcome to Jose's Pokemon World!`;
+  document.getElementById('welcome-banner').classList.remove('hidden');
+  setTimeout(dismissWelcome, 5000);
+}
+
+function dismissWelcome() {
+  document.getElementById('welcome-banner').classList.add('hidden');
+}
+
+// ── Sign-up / Request account ─────────────────────────────────────
+// Set max DOB date to today
+document.getElementById('signup-dob').max = new Date().toISOString().split('T')[0];
+
+function checkAge() {
+  const dob = document.getElementById('signup-dob').value;
+  const errEl = document.getElementById('dob-error');
+  errEl.classList.add('hidden');
+
+  if (!dob) {
+    errEl.textContent = 'Please enter your date of birth.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  const today = new Date(), birth = new Date(dob);
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+
+  if (age < 1 || age > 120) {
+    errEl.textContent = 'Please enter a valid date of birth.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  // Hide step 1, show correct flow
+  document.getElementById('signup-step-1').classList.add('hidden');
+  if (age < 13)       document.getElementById('signup-under13').classList.remove('hidden');
+  else if (age < 18)  document.getElementById('signup-teen').classList.remove('hidden');
+  else                document.getElementById('signup-adult').classList.remove('hidden');
+}
+
+async function submitRequest(group) {
+  const dob = document.getElementById('signup-dob').value;
+  let body = { dob };
+  let errId;
+
+  if (group === 'under13') {
+    errId = 'su13-error';
+    body = { ...body,
+      displayName:   document.getElementById('su13-name').value.trim(),
+      username:      document.getElementById('su13-username').value.trim(),
+      school:        document.getElementById('su13-school').value.trim(),
+      parentName:    document.getElementById('su13-parentname').value.trim(),
+      parentEmail:   document.getElementById('su13-parentemail').value.trim(),
+      parentConsent: document.getElementById('su13-consent').checked,
+    };
+  } else if (group === 'teen') {
+    errId = 'suteen-error';
+    body = { ...body,
+      displayName: document.getElementById('suteen-name').value.trim(),
+      username:    document.getElementById('suteen-username').value.trim(),
+      school:      document.getElementById('suteen-school').value.trim(),
+      selfConsent: document.getElementById('suteen-consent').checked,
+    };
+  } else {
+    errId = 'suadult-error';
+    body = { ...body,
+      displayName: document.getElementById('suadult-name').value.trim(),
+      username:    document.getElementById('suadult-username').value.trim(),
+      school:      document.getElementById('suadult-school').value.trim(),
+    };
+  }
+
+  const errEl = document.getElementById(errId);
+  errEl.classList.add('hidden');
+
+  try {
+    const res  = await fetch('/api/auth/request-account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.error;
+      errEl.classList.remove('hidden');
+      return;
+    }
+    // Show success
+    ['signup-under13','signup-teen','signup-adult'].forEach(id =>
+      document.getElementById(id).classList.add('hidden')
+    );
+    document.getElementById('signup-success').classList.remove('hidden');
+  } catch {
+    errEl.textContent = 'Could not connect to server. Try again later.';
+    errEl.classList.remove('hidden');
+  }
+}
+
+// ── Report ────────────────────────────────────────────────────────
+async function submitReport() {
+  const desc  = document.getElementById('rpt-desc').value.trim();
+  const errEl = document.getElementById('rpt-error');
+  errEl.classList.add('hidden');
+
+  if (!desc) {
+    errEl.textContent = 'Please describe what happened.';
+    errEl.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/report', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        reporterName: document.getElementById('rpt-name').value.trim(),
+        aboutUser:    document.getElementById('rpt-about').value.trim(),
+        description:  desc
+      })
+    });
+    if (res.ok) {
+      closeModal();
+      alert('✅ Your report was sent to Jose\'s family. Thank you for staying safe! 💛');
+    }
+  } catch {
+    errEl.textContent = 'Could not send report. Please tell a trusted adult directly.';
+    errEl.classList.remove('hidden');
+  }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────
 loadContent();

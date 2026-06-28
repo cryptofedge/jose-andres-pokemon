@@ -28,7 +28,7 @@
         <span class="pokeball-icon">⚪</span>
         <div>
           <h1>Jose Andres</h1>
-          <p>Pokemon Trainer · Age 10</p>
+          <p>Pokemon Trainer · Age 6</p>
         </div>
       </div>
       <button class="hamburger" id="hamburger" aria-label="Open menu">
@@ -40,9 +40,117 @@
         <a href="#gallery" onclick="closeNav()">Gallery</a>
         <a href="#posts"   onclick="closeNav()">Updates</a>
       </nav>
+      <div id="header-user" class="header-user hidden">
+        <span id="header-avatar"></span>
+        <span id="header-name"></span>
+        <button class="btn-logout" onclick="logout()">Logout</button>
+      </div>
+      <button id="btn-login" class="btn-login-header" onclick="openModal('login')">🔑 Login</button>
     </div>
   </header>
   <div id="nav-overlay" onclick="closeNav()"></div>
+
+  <!-- ── LOGIN MODAL ── -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="closeModal()"></div>
+
+  <div id="modal-login" class="modal hidden">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">🔑</div>
+    <h2 class="modal-title">Welcome Back!</h2>
+    <p class="modal-sub">Log in to Jose's Pokemon World</p>
+    <input type="text"     id="login-username" class="modal-input" placeholder="Your username" autocomplete="username" />
+    <input type="password" id="login-password" class="modal-input" placeholder="Your secret code 🔒" autocomplete="current-password" />
+    <p id="login-error" class="modal-error hidden"></p>
+    <button class="modal-btn" onclick="doLogin()">Let's Go! ⚡</button>
+    <p class="modal-switch">Don't have an account? <button class="link-btn" onclick="openModal('signup')">Request one here →</button></p>
+  </div>
+
+  <!-- ── SIGN UP / REQUEST ACCOUNT MODAL ── -->
+  <div id="modal-signup" class="modal hidden">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="signup-step-1">
+      <div class="modal-icon">🎮</div>
+      <h2 class="modal-title">Join Jose's World!</h2>
+      <p class="modal-sub">First, let us know how old you are</p>
+      <label class="modal-label">Your Date of Birth *</label>
+      <input type="date" id="signup-dob" class="modal-input" max="" />
+      <p id="dob-error" class="modal-error hidden"></p>
+      <button class="modal-btn" onclick="checkAge()">Next ➡️</button>
+      <p class="modal-switch">Already have an account? <button class="link-btn" onclick="openModal('login')">Log in →</button></p>
+    </div>
+
+    <!-- Under 13 consent screen -->
+    <div id="signup-under13" class="hidden">
+      <div class="modal-icon">👨‍👩‍👧</div>
+      <h2 class="modal-title">Parent Permission Needed!</h2>
+      <p class="modal-sub">Because you're under 13, a parent or guardian must give permission first. <strong>Please ask a parent to fill this out with you.</strong></p>
+      <label class="modal-label">Your Display Name *</label>
+      <input type="text" id="su13-name"     class="modal-input" placeholder="e.g. Alex" />
+      <label class="modal-label">Username * (no spaces)</label>
+      <input type="text" id="su13-username" class="modal-input" placeholder="e.g. alex2019" />
+      <label class="modal-label">School (optional)</label>
+      <input type="text" id="su13-school"   class="modal-input" placeholder="e.g. Sunny Elementary" />
+      <label class="modal-label">Parent / Guardian Full Name *</label>
+      <input type="text" id="su13-parentname"  class="modal-input" placeholder="Parent's full name" />
+      <label class="modal-label">Parent / Guardian Email *</label>
+      <input type="email" id="su13-parentemail" class="modal-input" placeholder="parent@email.com" />
+      <label class="consent-check">
+        <input type="checkbox" id="su13-consent" />
+        <span>I am the parent/guardian and I give permission for my child to join this website. I understand that Jose's family will review and approve this request before any account is created.</span>
+      </label>
+      <p id="su13-error" class="modal-error hidden"></p>
+      <button class="modal-btn" onclick="submitRequest('under13')">Send Request 📨</button>
+    </div>
+
+    <!-- 13–17 consent screen -->
+    <div id="signup-teen" class="hidden">
+      <div class="modal-icon">🎒</div>
+      <h2 class="modal-title">Almost There!</h2>
+      <p class="modal-sub">Because you're under 18, a parent or guardian must have given you permission to join.</p>
+      <label class="modal-label">Your Display Name *</label>
+      <input type="text" id="suteen-name"     class="modal-input" placeholder="e.g. Alex" />
+      <label class="modal-label">Username * (no spaces)</label>
+      <input type="text" id="suteen-username" class="modal-input" placeholder="e.g. alex2010" />
+      <label class="modal-label">School (optional)</label>
+      <input type="text" id="suteen-school"   class="modal-input" placeholder="e.g. Lincoln Middle School" />
+      <label class="consent-check">
+        <input type="checkbox" id="suteen-consent" />
+        <span>My parent or guardian knows I'm joining this website and has given me permission.</span>
+      </label>
+      <p id="suteen-error" class="modal-error hidden"></p>
+      <button class="modal-btn" onclick="submitRequest('teen')">Send Request 📨</button>
+    </div>
+
+    <!-- 18+ screen -->
+    <div id="signup-adult" class="hidden">
+      <div class="modal-icon">🌟</div>
+      <h2 class="modal-title">Request an Account</h2>
+      <p class="modal-sub">Jose's family will review and approve your request.</p>
+      <label class="modal-label">Your Display Name *</label>
+      <input type="text" id="suadult-name"     class="modal-input" placeholder="e.g. Coach Rivera" />
+      <label class="modal-label">Username * (no spaces)</label>
+      <input type="text" id="suadult-username" class="modal-input" placeholder="e.g. coachrivera" />
+      <label class="modal-label">School / Connection (optional)</label>
+      <input type="text" id="suadult-school"   class="modal-input" placeholder="e.g. Jose's soccer coach" />
+      <p id="suadult-error" class="modal-error hidden"></p>
+      <button class="modal-btn" onclick="submitRequest('adult')">Send Request 📨</button>
+    </div>
+
+    <!-- Success screen -->
+    <div id="signup-success" class="hidden" style="text-align:center;padding:20px 0">
+      <div class="modal-icon">🎉</div>
+      <h2 class="modal-title" style="color:var(--green)">Request Sent!</h2>
+      <p class="modal-sub">Jose's family will review your request.<br/>Once approved, you'll get a username and secret code to log in!</p>
+      <button class="modal-btn" style="margin-top:24px" onclick="closeModal()">Got it! 👍</button>
+    </div>
+  </div>
+
+  <!-- ── WELCOME BANNER (shown after login) ── -->
+  <div id="welcome-banner" class="welcome-banner hidden">
+    <span id="wb-avatar"></span>
+    <span id="wb-msg"></span>
+    <button onclick="dismissWelcome()">✕</button>
+  </div>
 
   <!-- ── HERO ── -->
   <section id="home" class="hero">
@@ -122,9 +230,27 @@
   </section>
 
   <!-- ── FOOTER ── -->
+  <!-- ── REPORT MODAL ── -->
+  <div id="modal-report" class="modal hidden">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon">🚨</div>
+    <h2 class="modal-title" style="color:#ff6b6b">Report Something Wrong</h2>
+    <p class="modal-sub">If someone made you feel uncomfortable or unsafe, tell Jose's family right away. You're safe to report this.</p>
+    <label class="modal-label">Your Name (optional)</label>
+    <input type="text" id="rpt-name" class="modal-input" placeholder="You can stay anonymous" />
+    <label class="modal-label">Who or what are you reporting?</label>
+    <input type="text" id="rpt-about" class="modal-input" placeholder="e.g. a username, or 'a message I saw'" />
+    <label class="modal-label">What happened? *</label>
+    <textarea id="rpt-desc" class="modal-input" rows="4" placeholder="Tell us what happened. We will look into it right away."></textarea>
+    <p id="rpt-error" class="modal-error hidden"></p>
+    <button class="modal-btn" style="background:#ff6b6b" onclick="submitReport()">Send Report 🚨</button>
+  </div>
+
   <footer>
     <p>⚡ Jose Andres' Pokemon World · Made with ❤️ &amp; Pokeballs ⚡</p>
     <p class="footer-sub">Gotta catch 'em all!</p>
+    <button class="report-btn" onclick="openModal('report')">🚨 Report Something Wrong</button>
+    <p class="footer-safety">This site is monitored by Jose's family. Stay safe! 💛</p>
   </footer>
 
   <script src="script.js"></script>

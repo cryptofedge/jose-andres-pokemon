@@ -195,6 +195,98 @@
       .tab-btn { font-size: 11px; padding: 8px 8px; }
     }
 
+    /* ── Badge ── */
+    .badge {
+      display: inline-block;
+      background: var(--red);
+      color: #fff;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 7px;
+      margin-left: 4px;
+    }
+    .badge.hidden { display: none; }
+
+    /* ── Safety tab ── */
+    .tab-danger { border-color: rgba(227,53,13,0.5) !important; }
+    .tab-danger.active { background: var(--red) !important; border-color: var(--red) !important; color: #fff !important; }
+
+    .alert-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px,1fr)); gap: 16px; margin-bottom: 28px; }
+    .alert-card {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      text-align: center;
+    }
+    .alert-card.danger { border-color: rgba(227,53,13,0.6); background: rgba(227,53,13,0.08); }
+    .alert-card.warning { border-color: rgba(255,203,5,0.5); background: rgba(255,203,5,0.06); }
+    .alert-num { font-family: var(--font-pixel); font-size: 28px; margin-bottom: 6px; }
+    .alert-card.danger  .alert-num { color: var(--red); }
+    .alert-card.warning .alert-num { color: var(--yellow); }
+    .alert-card .alert-label { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+    .log-row {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.04);
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .log-row.danger  { border-left: 4px solid var(--red); background: rgba(227,53,13,0.07); }
+    .log-row.warning { border-left: 4px solid var(--yellow); }
+    .log-row.info    { border-left: 4px solid #3D7DCA; }
+    .log-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .log-dot.danger  { background: var(--red); }
+    .log-dot.warning { background: var(--yellow); }
+    .log-dot.info    { background: #3D7DCA; }
+    .log-body { flex: 1; }
+    .log-type { font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; margin-bottom: 2px; }
+    .log-detail { color: rgba(255,255,255,0.6); line-height: 1.4; }
+    .log-meta { font-size: 11px; color: rgba(255,255,255,0.3); margin-top: 3px; }
+
+    .report-card {
+      background: rgba(227,53,13,0.07);
+      border: 2px solid rgba(227,53,13,0.3);
+      border-radius: var(--radius);
+      padding: 18px;
+      margin-bottom: 12px;
+    }
+    .report-card .report-title { font-weight: 700; color: #ff6b6b; margin-bottom: 6px; }
+    .report-card .report-body { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 10px; line-height: 1.5; }
+    .report-card .report-meta { font-size: 12px; color: rgba(255,255,255,0.3); }
+
+    /* Friends tab */
+    .color-pick { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .color-pick input[type=color] { width: 40px; height: 40px; border: none; border-radius: 8px; cursor: pointer; padding: 2px; background: none; }
+    .avatar-pick { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+    .avatar-opt {
+      font-size: 28px; width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 10px; cursor: pointer;
+      background: rgba(255,255,255,0.06);
+      border: 2px solid transparent;
+      transition: border-color 0.15s;
+    }
+    .avatar-opt.selected { border-color: var(--yellow); background: rgba(255,203,5,0.12); }
+
+    /* Request cards */
+    .req-card {
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .req-card.flagged { border-color: rgba(227,53,13,0.5); background: rgba(227,53,13,0.06); }
+    .req-card h4 { font-family: var(--font-pixel); font-size: 10px; color: var(--yellow); margin-bottom: 10px; }
+    .req-card .req-flag { color: var(--red); font-weight: 700; font-size: 12px; margin-bottom: 8px; }
+    .req-card .req-meta { font-size: 12px; color: rgba(255,255,255,0.4); margin-bottom: 14px; line-height: 1.7; }
+    .req-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .req-actions input { flex: 1; min-width: 140px; }
+
     .file-drop {
       border: 2px dashed rgba(255,203,5,0.4);
       border-radius: var(--radius);
@@ -296,9 +388,12 @@
   <div class="admin-body">
     <!-- Tabs -->
     <div class="tabs">
-      <button class="tab-btn active" onclick="switchTab('tab-pokemon', this)">⚔️ My Pokemon</button>
+      <button class="tab-btn active" onclick="switchTab('tab-pokemon', this)">⚔️ Pokemon</button>
       <button class="tab-btn" onclick="switchTab('tab-gallery', this)">📸 Gallery</button>
       <button class="tab-btn" onclick="switchTab('tab-posts', this)">📢 Posts</button>
+      <button class="tab-btn" onclick="switchTab('tab-friends', this)">👥 Friends</button>
+      <button class="tab-btn" onclick="switchTab('tab-requests', this)">📋 Requests <span id="req-badge" class="badge hidden"></span></button>
+      <button class="tab-btn tab-danger" onclick="switchTab('tab-safety', this)">🚨 Safety <span id="safety-badge" class="badge hidden"></span></button>
     </div>
 
     <!-- ── TAB: Pokemon ── -->
@@ -392,6 +487,41 @@
       </div>
     </div>
 
+    <!-- ── TAB: Friends ── -->
+    <div id="tab-friends" class="tab-panel">
+      <div class="panel-card">
+        <h3>➕ Add a Friend Directly</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px">Use this to add friends yourself. For outside requests, use the Requests tab.</p>
+        <div class="form-row">
+          <div><label>Display Name *</label><input type="text" id="fr-name" placeholder="e.g. Miguel" /></div>
+          <div><label>Username * (no spaces)</label><input type="text" id="fr-username" placeholder="e.g. miguel2019" /></div>
+        </div>
+        <div class="form-row">
+          <div><label>Secret Code (password) *</label><input type="text" id="fr-password" placeholder="e.g. pikachu99" /></div>
+          <div><label>School (optional)</label><input type="text" id="fr-school" placeholder="e.g. Sunshine Elementary" /></div>
+        </div>
+        <label>Pick an Avatar</label>
+        <div class="avatar-pick" id="fr-avatar-pick"></div>
+        <input type="hidden" id="fr-avatar" value="🐱" />
+        <label style="margin-top:16px">Pick a Color</label>
+        <input type="color" id="fr-color" value="#3D7DCA" style="margin-top:6px;width:48px;height:40px;border:none;border-radius:8px;cursor:pointer;background:none;" />
+        <div style="margin-top:20px"><button class="btn btn-primary" onclick="addFriend()">Add Friend 👥</button></div>
+      </div>
+      <div class="panel-card">
+        <h3>👥 All Friends</h3>
+        <div id="fr-list" class="item-list"></div>
+      </div>
+    </div>
+
+    <!-- ── TAB: Requests ── -->
+    <div id="tab-requests" class="tab-panel">
+      <div class="panel-card">
+        <h3>📋 Account Requests</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px">People who asked to join Jose's world. Review and approve or deny each one. 🚨 Red = flagged for extra review.</p>
+        <div id="req-list"></div>
+      </div>
+    </div>
+
     <!-- ── TAB: Posts ── -->
     <div id="tab-posts" class="tab-panel">
       <div class="panel-card">
@@ -416,6 +546,46 @@
         <div id="post-list" class="item-list"></div>
       </div>
     </div>
+    <!-- ── TAB: Safety ── -->
+    <div id="tab-safety" class="tab-panel">
+      <div class="panel-card">
+        <h3>🚨 Safety Overview</h3>
+        <div class="alert-grid">
+          <div class="alert-card danger"><div class="alert-num" id="sa-reports">0</div><div class="alert-label">Open Reports</div></div>
+          <div class="alert-card danger"><div class="alert-num" id="sa-danger">0</div><div class="alert-label">Danger Events</div></div>
+          <div class="alert-card danger"><div class="alert-num" id="sa-flagged">0</div><div class="alert-label">Flagged Requests</div></div>
+          <div class="alert-card warning"><div class="alert-num" id="sa-locked">0</div><div class="alert-label">Locked Accounts</div></div>
+        </div>
+      </div>
+
+      <!-- Open reports -->
+      <div class="panel-card">
+        <h3>📣 Safety Reports From Users</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px">These were submitted by friends clicking "Report Something Wrong".</p>
+        <div id="sa-reports-list"></div>
+      </div>
+
+      <!-- Flagged account requests -->
+      <div class="panel-card">
+        <h3>🚩 Flagged Account Requests</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px">Adults (18+) who requested access. Review carefully before approving.</p>
+        <div id="sa-flagged-list"></div>
+      </div>
+
+      <!-- Locked accounts -->
+      <div class="panel-card">
+        <h3>🔒 Locked Accounts</h3>
+        <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px">Locked after too many wrong passwords. Unlock only if you trust the person.</p>
+        <div id="sa-locked-list" class="item-list"></div>
+      </div>
+
+      <!-- Activity log -->
+      <div class="panel-card">
+        <h3>📋 Activity Log (Last 100 events)</h3>
+        <div id="sa-log"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -649,7 +819,239 @@ async function loadPosts() {
   `).join('');
 }
 
-function loadAll() { loadPokemon(); loadGallery(); loadPosts(); }
+// ── Friends ───────────────────────────────────────────────────────
+const AVATARS = ['🐱','🐶','🐸','🦊','🐼','🐨','🦁','🐯','🐺','🦝','🐻','🐮','🦄','🐙','🦋'];
+let selectedAvatar = '🐱';
+
+function buildAvatarPicker() {
+  const el = document.getElementById('fr-avatar-pick');
+  el.innerHTML = AVATARS.map(a => `<div class="avatar-opt${a===selectedAvatar?' selected':''}" onclick="pickAvatar('${a}',this)">${a}</div>`).join('');
+}
+
+function pickAvatar(a, el) {
+  selectedAvatar = a;
+  document.getElementById('fr-avatar').value = a;
+  document.querySelectorAll('.avatar-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function addFriend() {
+  const name     = document.getElementById('fr-name').value.trim();
+  const username = document.getElementById('fr-username').value.trim();
+  const password = document.getElementById('fr-password').value.trim();
+  const school   = document.getElementById('fr-school').value.trim();
+  const avatar   = document.getElementById('fr-avatar').value;
+  const color    = document.getElementById('fr-color').value;
+  if (!name || !username || !password) return showToast('Need name, username and password!', true);
+
+  const res = await fetch('/api/admin/friends', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+    body: JSON.stringify({ displayName: name, username, password, school, avatar, color })
+  });
+  const data = await res.json();
+  if (!res.ok) return showToast(data.error || 'Error!', true);
+  showToast('👥 Friend added!');
+  document.getElementById('fr-name').value = '';
+  document.getElementById('fr-username').value = '';
+  document.getElementById('fr-password').value = '';
+  document.getElementById('fr-school').value = '';
+  loadFriends();
+}
+
+async function deleteFriend(id) {
+  if (!confirm('Remove this friend?')) return;
+  await fetch(`/api/admin/friends/${id}`, { method: 'DELETE', headers: { 'x-admin-password': adminPassword } });
+  showToast('Friend removed');
+  loadFriends();
+}
+
+async function unlockAccount(id) {
+  await fetch(`/api/admin/friends/${id}/unlock`, { method: 'POST', headers: { 'x-admin-password': adminPassword } });
+  showToast('🔓 Account unlocked!');
+  loadFriends(); loadSafety();
+}
+
+async function resetPassword(id) {
+  const pwd = prompt('Enter new secret code for this friend:');
+  if (!pwd) return;
+  await fetch(`/api/admin/friends/${id}/password`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+    body: JSON.stringify({ password: pwd })
+  });
+  showToast('🔑 Password updated!');
+}
+
+async function loadFriends() {
+  const res  = await fetch('/api/admin/friends', { headers: { 'x-admin-password': adminPassword } });
+  const list = await res.json();
+  const el   = document.getElementById('fr-list');
+  if (!list.length) { el.innerHTML = '<div class="empty-msg">No friends yet.</div>'; return; }
+  el.innerHTML = list.map(f => `
+    <div class="item-row">
+      <div style="font-size:32px">${f.avatar}</div>
+      <div class="item-info">
+        <div class="item-name" style="color:${f.color}">${f.displayName} <span style="color:rgba(255,255,255,0.3);font-size:12px">@${f.username}</span>${f.locked?'<span style="color:var(--red);font-size:11px;margin-left:8px">🔒 LOCKED</span>':''}</div>
+        <div class="item-meta">${f.role === 'owner' ? '⭐ Owner' : '👥 Friend'}${f.school?' · '+f.school:''}${f.age?' · Age '+f.age:''} · Joined ${new Date(f.createdAt).toLocaleDateString()}</div>
+      </div>
+      ${f.role !== 'owner' ? `
+        <button class="btn btn-sm" style="background:rgba(255,255,255,0.1);color:#fff" onclick="resetPassword(${f.id})">🔑</button>
+        ${f.locked ? `<button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="unlockAccount(${f.id})">Unlock</button>` : ''}
+        <button class="btn btn-red btn-sm" onclick="deleteFriend(${f.id})">Remove</button>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+// ── Requests ──────────────────────────────────────────────────────
+async function loadRequests() {
+  const res  = await fetch('/api/admin/requests', { headers: { 'x-admin-password': adminPassword } });
+  const data = await res.json();
+  const list = (data.requests || []).filter(r => r.status === 'pending');
+
+  // Update badge
+  const badge = document.getElementById('req-badge');
+  badge.textContent = list.length;
+  badge.classList.toggle('hidden', list.length === 0);
+
+  const el = document.getElementById('req-list');
+  if (!list.length) { el.innerHTML = '<div class="empty-msg">No pending requests! ✅</div>'; return; }
+  el.innerHTML = list.map(r => `
+    <div class="req-card ${r.flagged?'flagged':''}">
+      <h4>${r.displayName} <span style="color:rgba(255,255,255,0.3)">@${r.username}</span></h4>
+      ${r.flagged ? `<div class="req-flag">⚠️ FLAGGED: ${r.flagReason}</div>` : ''}
+      <div class="req-meta">
+        Age: <strong>${r.age}</strong> · School: ${r.school||'—'} · Requested: ${new Date(r.createdAt).toLocaleString()}<br/>
+        ${r.age < 13 ? `Parent: ${r.parentName||'—'} · Email: ${r.parentEmail||'—'} · Consent: ${r.parentConsent?'✅ Yes':'❌ No'}` : ''}
+        ${r.age >= 13 && r.age < 18 ? `Self-consent confirmed: ${r.selfConsent?'✅ Yes':'❌ No'}` : ''}
+        ${r.age >= 18 ? '🔴 Adult user — verify identity before approving.' : ''}
+        <br/>IP: ${r.ip||'—'}
+      </div>
+      <div class="req-actions">
+        <input type="text" placeholder="Set their secret code *" id="req-pwd-${r.id}" style="max-width:200px" />
+        <button class="btn btn-primary btn-sm" onclick="approveRequest(${r.id})">✅ Approve</button>
+        <button class="btn btn-red btn-sm"     onclick="denyRequest(${r.id})">❌ Deny</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function approveRequest(id) {
+  const pwd = document.getElementById(`req-pwd-${id}`).value.trim();
+  if (!pwd) return showToast('Set a secret code first!', true);
+  const res = await fetch(`/api/admin/requests/${id}/approve`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+    body: JSON.stringify({ password: pwd })
+  });
+  const data = await res.json();
+  if (!res.ok) return showToast(data.error||'Error', true);
+  showToast(`✅ ${data.displayName} approved!`);
+  loadRequests(); loadFriends();
+}
+
+async function denyRequest(id) {
+  if (!confirm('Deny this request?')) return;
+  await fetch(`/api/admin/requests/${id}/deny`, { method: 'POST', headers: { 'x-admin-password': adminPassword } });
+  showToast('Request denied');
+  loadRequests();
+}
+
+// ── Safety dashboard ──────────────────────────────────────────────
+async function loadSafety() {
+  const res  = await fetch('/api/admin/safety', { headers: { 'x-admin-password': adminPassword } });
+  const data = await res.json();
+
+  // Alert counts
+  document.getElementById('sa-reports').textContent  = data.alerts.openReports;
+  document.getElementById('sa-danger').textContent   = data.alerts.dangerLogs;
+  document.getElementById('sa-flagged').textContent  = data.alerts.flaggedRequests;
+  document.getElementById('sa-locked').textContent   = data.alerts.lockedAccounts;
+
+  // Safety tab badge
+  const total = data.alerts.openReports + data.alerts.flaggedRequests + data.alerts.lockedAccounts;
+  const sb = document.getElementById('safety-badge');
+  sb.textContent = total;
+  sb.classList.toggle('hidden', total === 0);
+
+  // Open reports
+  const rEl = document.getElementById('sa-reports-list');
+  if (!data.openReports.length) {
+    rEl.innerHTML = '<div class="empty-msg">No open reports ✅</div>';
+  } else {
+    rEl.innerHTML = data.openReports.map(r => `
+      <div class="report-card">
+        <div class="report-title">🚨 Report from ${r.reporterName} about "${r.aboutUser||'unknown'}"</div>
+        <div class="report-body">${r.description}</div>
+        <div class="report-meta">IP: ${r.ip} · ${new Date(r.createdAt).toLocaleString()}</div>
+        <button class="btn btn-sm" style="background:var(--green);color:#fff;margin-top:12px" onclick="closeReport(${r.id})">Mark Resolved ✅</button>
+      </div>
+    `).join('');
+  }
+
+  // Flagged requests
+  const fEl = document.getElementById('sa-flagged-list');
+  if (!data.flaggedRequests.length) {
+    fEl.innerHTML = '<div class="empty-msg">No flagged requests ✅</div>';
+  } else {
+    fEl.innerHTML = data.flaggedRequests.map(r => `
+      <div class="req-card flagged">
+        <h4>${r.displayName} <span style="color:rgba(255,255,255,0.3)">@${r.username}</span></h4>
+        <div class="req-flag">⚠️ ${r.flagReason}</div>
+        <div class="req-meta">Age: ${r.age} · School: ${r.school||'—'} · IP: ${r.ip} · ${new Date(r.createdAt).toLocaleString()}</div>
+        <div class="req-actions">
+          <input type="text" placeholder="Secret code if approving" id="sfr-pwd-${r.id}" style="max-width:200px" />
+          <button class="btn btn-primary btn-sm" onclick="approveRequest(${r.id})">✅ Approve</button>
+          <button class="btn btn-red btn-sm"     onclick="denyRequest(${r.id})">❌ Deny</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // Locked accounts
+  const lEl = document.getElementById('sa-locked-list');
+  if (!data.lockedAccounts.length) {
+    lEl.innerHTML = '<div class="empty-msg">No locked accounts ✅</div>';
+  } else {
+    lEl.innerHTML = data.lockedAccounts.map(u => `
+      <div class="item-row">
+        <div style="font-size:28px">🔒</div>
+        <div class="item-info">
+          <div class="item-name">${u.displayName} <span style="color:rgba(255,255,255,0.3);font-size:12px">@${u.username}</span></div>
+          <div class="item-meta">Failed attempts: ${u.failedLogins}</div>
+        </div>
+        <button class="btn btn-sm" style="background:var(--green);color:#fff" onclick="unlockAccount(${u.id})">Unlock</button>
+        <button class="btn btn-red btn-sm" onclick="deleteFriend(${u.id})">Remove</button>
+      </div>
+    `).join('');
+  }
+
+  // Activity log
+  const aEl = document.getElementById('sa-log');
+  aEl.innerHTML = data.recentActivity.map(l => `
+    <div class="log-row ${l.severity}">
+      <div class="log-dot ${l.severity}"></div>
+      <div class="log-body">
+        <div class="log-type">${l.type.replace(/_/g,' ')}</div>
+        <div class="log-detail">${l.displayName ? `<strong>${l.displayName}</strong> · ` : ''}${l.detail}</div>
+        <div class="log-meta">${l.ip} · ${new Date(l.timestamp).toLocaleString()}</div>
+      </div>
+    </div>
+  `).join('') || '<div class="empty-msg">No activity yet</div>';
+}
+
+async function closeReport(id) {
+  await fetch(`/api/admin/reports/${id}/close`, { method: 'POST', headers: { 'x-admin-password': adminPassword } });
+  showToast('Report marked resolved ✅');
+  loadSafety();
+}
+
+function loadAll() {
+  loadPokemon(); loadGallery(); loadPosts();
+  loadFriends(); loadRequests(); loadSafety();
+  buildAvatarPicker();
+}
 </script>
 </body>
 </html>

@@ -17,6 +17,7 @@
 }
 
 html { scroll-behavior: smooth; }
+.hidden { display: none !important; }
 
 body {
   font-family: var(--font-body);
@@ -551,6 +552,232 @@ footer p {
 }
 
 .fade-in { animation: fadeIn 0.5s ease forwards; }
+
+/* ── Header login button / user display ────────────────────────── */
+.btn-login-header {
+  background: rgba(255,255,255,0.15);
+  border: 2px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.btn-login-header:hover { background: rgba(255,255,255,0.25); }
+
+.header-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,0,0,0.25);
+  padding: 6px 14px 6px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.header-user.hidden { display: none; }
+
+.btn-logout {
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* ── Modal system ───────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  z-index: 300;
+}
+.modal-overlay.hidden { display: none; }
+
+.modal {
+  position: fixed;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1a1a2e;
+  border: 2px solid rgba(255,203,5,0.35);
+  border-radius: 20px;
+  padding: 36px 32px;
+  width: min(480px, 94vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  z-index: 301;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+}
+.modal.hidden { display: none; }
+
+.modal-close {
+  position: absolute; top: 16px; right: 16px;
+  background: rgba(255,255,255,0.1);
+  border: none; color: #fff;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  font-size: 16px; cursor: pointer;
+}
+
+.modal-icon { font-size: 52px; text-align: center; margin-bottom: 12px; }
+
+.modal-title {
+  font-family: var(--font-pixel);
+  font-size: 13px;
+  color: var(--yellow);
+  text-align: center;
+  line-height: 1.7;
+  margin-bottom: 8px;
+}
+
+.modal-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  text-align: center;
+  line-height: 1.6;
+  margin-bottom: 22px;
+}
+
+.modal-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.55);
+  margin-bottom: 5px;
+  margin-top: 12px;
+}
+
+.modal-input {
+  width: 100%;
+  padding: 13px 15px;
+  border-radius: 12px;
+  border: 2px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.07);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+.modal-input:focus { outline: none; border-color: var(--yellow); }
+textarea.modal-input { resize: vertical; min-height: 90px; }
+
+.modal-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 999px;
+  border: none;
+  background: var(--yellow);
+  color: #000;
+  font-family: var(--font-body);
+  font-weight: 900;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.modal-btn:hover { transform: scale(1.02); }
+
+.modal-error {
+  background: rgba(227,53,13,0.15);
+  border: 1px solid rgba(227,53,13,0.4);
+  color: #ff6b6b;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+.modal-error.hidden { display: none; }
+
+.modal-switch {
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 16px;
+}
+
+.link-btn {
+  background: none; border: none;
+  color: var(--yellow);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.consent-check {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 14px 0;
+  cursor: pointer;
+  font-size: 13px;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+}
+.consent-check input { flex-shrink: 0; margin-top: 3px; width: 18px; height: 18px; accent-color: var(--yellow); }
+
+/* ── Welcome banner ─────────────────────────────────────────────── */
+.welcome-banner {
+  position: fixed;
+  top: 78px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 2px solid var(--yellow);
+  border-radius: 999px;
+  padding: 12px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  z-index: 250;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  animation: slideDown 0.4s ease;
+  white-space: nowrap;
+  max-width: 90vw;
+}
+.welcome-banner.hidden { display: none; }
+.welcome-banner button {
+  background: rgba(255,255,255,0.1);
+  border: none; color: #fff;
+  width: 28px; height: 28px;
+  border-radius: 50%; cursor: pointer; font-size: 14px;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ── Report button (footer) ─────────────────────────────────────── */
+.report-btn {
+  margin-top: 20px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  border: 2px solid rgba(255,100,100,0.5);
+  background: rgba(255,100,100,0.1);
+  color: #ff9999;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.report-btn:hover { background: rgba(255,100,100,0.2); }
+
+.footer-safety {
+  font-family: var(--font-body) !important;
+  font-size: 12px !important;
+  color: rgba(255,255,255,0.25) !important;
+  margin-top: 8px !important;
+}
 
 /* ── Hamburger button (hidden on desktop) ───────────────────────── */
 .hamburger {
