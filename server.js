@@ -138,10 +138,11 @@ async function seedContent() {
     ]);
   }
   // One-time migration: rename PIKAFELLITO → Profesor Justin in existing posts
-  await Post.updateMany(
-    { body: /PIKAFELLITO/ },
-    [{ $set: { body: { $replaceAll: { input: '$body', find: 'PIKAFELLITO', replacement: 'Profesor Justin' } } } }]
-  );
+  const pikaflPosts = await Post.find({ body: /PIKAFELLITO/ });
+  for (const p of pikaflPosts) {
+    p.body = p.body.replace(/PIKAFELLITO/g, 'Profesor Justin');
+    await p.save();
+  }
 
   const pokCount = await Pokemon.countDocuments();
   if (pokCount === 0) {
