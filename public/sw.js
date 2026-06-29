@@ -1,6 +1,6 @@
 // ── Jose Andres Pokemon World — Service Worker ────────────────────
 // Cache-first for static assets, network-first for API calls
-const CACHE  = 'pokemon-world-v3';
+const CACHE  = 'pokemon-world-v4';
 const STATIC = [
   '/',
   '/index.html',

@@ -413,16 +413,30 @@ nav a:active {
 .hero {
   min-height: 92vh;
   background:
-    radial-gradient(ellipse at 30% 60%, rgba(59,76,202,0.18) 0%, transparent 60%),
-    radial-gradient(ellipse at 75% 30%, rgba(238,21,21,0.1) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 100%, rgba(255,222,0,0.06) 0%, transparent 50%),
-    linear-gradient(160deg, #0d0d1a 0%, #1a1a2e 50%, #0f1a3e 100%);
+    radial-gradient(ellipse 60% 70% at 20% 50%, rgba(59,76,202,0.3) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 40%, rgba(238,21,21,0.25) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 110%, rgba(255,222,0,0.12) 0%, transparent 50%),
+    linear-gradient(160deg, #0a0a1a 0%, #1a1a2e 50%, #0f1a3e 100%);
   display: flex; align-items: center; justify-content: space-between;
   padding: 80px 8% 60px;
   gap: 40px;
   position: relative;
   overflow: hidden;
   z-index: 1;
+}
+/* Big spotlight glow behind content */
+.hero::after {
+  content: '';
+  position: absolute;
+  left: -5%; top: 10%;
+  width: 55%; height: 80%;
+  background: radial-gradient(ellipse at 40% 50%,
+    rgba(59,76,202,0.22) 0%,
+    rgba(238,21,21,0.08) 40%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* Trainer card — hero left */
@@ -512,12 +526,13 @@ nav a:active {
 .hero-name-wrap { margin-bottom: 8px; }
 .hero-name {
   font-family: var(--font-pixel);
-  font-size: clamp(28px, 6vw, 64px);
+  font-size: clamp(30px, 6.5vw, 72px);
   color: var(--yellow);
   text-shadow:
-    3px 3px 0 rgba(0,0,0,0.6),
-    0 0 20px rgba(255,222,0,0.5),
-    0 0 40px rgba(255,222,0,0.2);
+    4px 4px 0 rgba(0,0,0,0.7),
+    0 0 20px rgba(255,222,0,0.8),
+    0 0 50px rgba(255,222,0,0.4),
+    0 0 80px rgba(255,222,0,0.15);
   line-height: 1.15;
   letter-spacing: 2px;
   animation: hero-name-pulse 3s ease-in-out infinite;
@@ -545,47 +560,67 @@ nav a:active {
 }
 
 /* Stat cards */
-.hero-stats { display: flex; gap: 14px; flex-wrap: wrap; }
+.hero-stats { display: flex; gap: 16px; flex-wrap: wrap; }
 
 .stat-card {
-  background: linear-gradient(135deg,
-    rgba(255,255,255,0.07) 0%,
-    rgba(255,255,255,0.03) 100%
-  );
-  border: 1px solid var(--border-gold);
   border-radius: var(--radius);
-  padding: 18px 24px;
+  padding: 20px 28px;
   display: flex; flex-direction: column; align-items: center;
-  backdrop-filter: blur(12px);
-  transition: all 0.3s;
+  transition: all 0.25s;
   position: relative;
   overflow: hidden;
   cursor: default;
+  min-width: 110px;
 }
+/* Card 1 — red (pokemon) */
+.stat-card:nth-child(1) {
+  background: linear-gradient(145deg, #C00000 0%, var(--red) 60%, #FF3535 100%);
+  border: 3px solid rgba(255,255,255,0.25);
+  box-shadow: 0 6px 0 #7a0000, 0 0 30px rgba(238,21,21,0.6), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+/* Card 2 — blue (gallery) */
+.stat-card:nth-child(2) {
+  background: linear-gradient(145deg, #1a2aaa 0%, var(--blue) 60%, #5568e8 100%);
+  border: 3px solid rgba(255,255,255,0.25);
+  box-shadow: 0 6px 0 #0d1566, 0 0 30px rgba(59,76,202,0.6), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+/* Card 3 — yellow (news) */
+.stat-card:nth-child(3) {
+  background: linear-gradient(145deg, #c9a800 0%, var(--yellow) 60%, #ffe840 100%);
+  border: 3px solid rgba(255,255,255,0.25);
+  box-shadow: 0 6px 0 #7a6600, 0 0 30px rgba(255,222,0,0.6), inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.stat-card:nth-child(3) .stat-num,
+.stat-card:nth-child(3) .stat-label { color: #1a1a1a; text-shadow: none; }
+
 .stat-card::before {
   content: '';
   position: absolute; top: 0; left: -100%;
   width: 60%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,222,0,0.08), transparent);
-  transition: left 0.6s;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  transition: left 0.5s;
 }
-.stat-card:hover { transform: translateY(-6px); border-color: var(--yellow); box-shadow: 0 12px 40px rgba(255,222,0,0.2); }
+.stat-card:hover { transform: translateY(-5px) scale(1.04); }
+.stat-card:nth-child(1):hover { box-shadow: 0 10px 0 #7a0000, 0 0 50px rgba(238,21,21,0.8); }
+.stat-card:nth-child(2):hover { box-shadow: 0 10px 0 #0d1566, 0 0 50px rgba(59,76,202,0.8); }
+.stat-card:nth-child(3):hover { box-shadow: 0 10px 0 #7a6600, 0 0 50px rgba(255,222,0,0.8); }
 .stat-card:hover::before { left: 150%; }
 
 .stat-num {
   font-family: var(--font-pixel);
-  font-size: 26px;
-  color: var(--yellow);
-  text-shadow: 0 0 15px rgba(255,222,0,0.5);
+  font-size: 32px;
+  color: #fff;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.4);
   line-height: 1;
   margin-bottom: 6px;
 }
 .stat-label {
-  font-size: 10px;
-  color: rgba(255,255,255,0.55);
+  font-size: 9px;
+  font-family: var(--font-pixel);
+  color: rgba(255,255,255,0.85);
   text-align: center;
-  font-weight: 700;
   letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
 }
 
 /* Hero art — 3D Pokeball */
@@ -593,13 +628,26 @@ nav a:active {
   position: relative;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  width: 420px; height: 420px;
+}
+/* Glow floor under pokeball */
+.hero-art::after {
+  content: '';
+  position: absolute;
+  bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  width: 200px; height: 30px;
+  background: radial-gradient(ellipse, rgba(238,21,21,0.5) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(10px);
+  animation: pb3d-float 4s ease-in-out infinite;
 }
 
 /* 3D Interactive Pokéball */
 .pokeball-3d {
-  width: 240px; height: 240px;
+  width: 300px; height: 300px;
   position: relative;
-  perspective: 600px;
+  perspective: 700px;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -611,12 +659,14 @@ nav a:active {
   animation: pb3d-float 4s ease-in-out infinite;
   position: relative;
   overflow: hidden;
-  border: 6px solid #1a1a1a;
+  border: 7px solid #111;
   box-shadow:
-    0 0 0 3px rgba(255,255,255,0.1),
-    0 30px 80px rgba(0,0,0,0.6),
-    0 0 60px rgba(238,21,21,0.3),
-    inset 0 0 30px rgba(0,0,0,0.3);
+    0 0 0 4px rgba(255,255,255,0.15),
+    0 0 0 6px rgba(238,21,21,0.3),
+    0 40px 100px rgba(0,0,0,0.7),
+    0 0 80px rgba(238,21,21,0.5),
+    0 0 140px rgba(238,21,21,0.2),
+    inset 0 0 40px rgba(0,0,0,0.3);
 }
 .pb3d-top {
   background: linear-gradient(135deg, #FF2020 0%, var(--red) 40%, #CC0000 100%);
@@ -666,23 +716,24 @@ nav a:active {
 /* Floating type badges around pokeball */
 .type-badge-orbit {
   position: absolute;
-  width: 44px; height: 44px;
+  width: 54px; height: 54px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-  border: 2px solid rgba(255,255,255,0.3);
+  font-size: 26px;
+  border: 3px solid rgba(255,255,255,0.5);
   backdrop-filter: blur(8px);
-  animation: orbit-badge 8s linear infinite;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  animation: orbit-badge 9s linear infinite;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 20px currentColor;
+  filter: drop-shadow(0 0 8px currentColor);
 }
-.type-badge-orbit.fire     { background: rgba(255,69,0,0.3); animation-delay: 0s; }
-.type-badge-orbit.water    { background: rgba(30,144,255,0.3); animation-delay: -2s; }
-.type-badge-orbit.grass    { background: rgba(60,179,113,0.3); animation-delay: -4s; }
-.type-badge-orbit.electric { background: rgba(255,215,0,0.3); animation-delay: -6s; }
+.type-badge-orbit.fire     { background: rgba(255,69,0,0.55);   color: #FF4500; animation-delay: 0s; box-shadow: 0 4px 20px rgba(255,69,0,0.5), 0 0 24px rgba(255,69,0,0.6); }
+.type-badge-orbit.water    { background: rgba(30,144,255,0.55); color: #1E90FF; animation-delay: -2.25s; box-shadow: 0 4px 20px rgba(30,144,255,0.5), 0 0 24px rgba(30,144,255,0.6); }
+.type-badge-orbit.grass    { background: rgba(60,179,113,0.55); color: #3CB371; animation-delay: -4.5s; box-shadow: 0 4px 20px rgba(60,179,113,0.5), 0 0 24px rgba(60,179,113,0.6); }
+.type-badge-orbit.electric { background: rgba(255,215,0,0.55);  color: #FFD700; animation-delay: -6.75s; box-shadow: 0 4px 20px rgba(255,215,0,0.5), 0 0 24px rgba(255,215,0,0.6); }
 
 @keyframes orbit-badge {
-  0%   { transform: rotate(0deg)   translateX(155px) rotate(0deg); }
-  100% { transform: rotate(360deg) translateX(155px) rotate(-360deg); }
+  0%   { transform: rotate(0deg)   translateX(190px) rotate(0deg); }
+  100% { transform: rotate(360deg) translateX(190px) rotate(-360deg); }
 }
 
 /* Pokeball big (legacy — replaced by 3D) */
