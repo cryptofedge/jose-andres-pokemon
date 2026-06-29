@@ -9,7 +9,7 @@ const rateLimit   = require('express-rate-limit');
 const mongoose    = require('mongoose');
 const { scanText, scanObject } = require('./safety');
 const agent       = require('./agent');
-const { Pokemon, GalleryItem, Post, User, PendingRequest, ActivityLog, Report, SocialToken, PublishJob, SiteConfig, TrainerProgress, Tip } = require('./models');
+const { Pokemon, GalleryItem, Post, User, PendingRequest, ActivityLog, Report, SocialToken, PublishJob, SiteConfig, TrainerProgress, Tip, Suggestion } = require('./models');
 const { google } = require('googleapis');
 const ffmpeg     = require('fluent-ffmpeg');
 const ffmpegPath = require('ffmpeg-static');
@@ -1016,6 +1016,29 @@ app.post('/api/admin/publish', requireAdmin, async (req, res) => {
 app.get('/api/admin/publish/history', requireAdmin, async (req, res) => {
   const jobs = await PublishJob.find().sort({ createdAt: -1 }).limit(20);
   res.json(jobs);
+});
+
+// ── Suggestions (Justin → Fellito) ────────────────────────────────────────────
+app.post('/api/admin/suggestions', requireAdmin, async (req, res) => {
+  const { from, title, body, category, priority } = req.body;
+  if (!title || !body) return res.status(400).json({ error: 'title and body required' });
+  const s = await Suggestion.create({ from: from || 'Justin', title, body, category, priority });
+  res.json(s);
+});
+
+app.get('/api/admin/suggestions', requireAdmin, async (req, res) => {
+  const suggestions = await Suggestion.find().sort({ createdAt: -1 });
+  res.json(suggestions);
+});
+
+app.patch('/api/admin/suggestions/:id/read', requireAdmin, async (req, res) => {
+  await Suggestion.findByIdAndUpdate(req.params.id, { read: true });
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/suggestions/:id', requireAdmin, async (req, res) => {
+  await Suggestion.findByIdAndDelete(req.params.id);
+  res.json({ ok: true });
 });
 
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'admin', 'index.html')));

@@ -763,6 +763,7 @@
       <button class="tab-btn tab-studio" onclick="switchTab('tab-studio', this)">🎬 Studio</button>
       <button class="tab-btn tab-editor" onclick="switchTab('tab-editor', this)">✂️ Editor</button>
       <button class="tab-btn tab-publish" onclick="switchTab('tab-publish', this)">🚀 Publish</button>
+      <button class="tab-btn" style="border-color:rgba(255,222,0,0.4)" onclick="switchTab('tab-suggestions', this); loadSuggestions()">💡 Suggestions <span id="sug-badge" class="badge hidden"></span></button>
     </div>
 
     <!-- ── TAB: Pokemon ── -->
@@ -1346,6 +1347,49 @@
       </div>
     </div>
 
+    <!-- ── TAB: Suggestions ── -->
+    <div id="tab-suggestions" class="tab-panel">
+      <div class="panel-card">
+        <h3>💡 Drop a Build Suggestion</h3>
+        <p style="color:rgba(255,255,255,0.5);font-size:13px;margin-bottom:16px">Justin — write your idea here and it'll show up in Fellito's inbox</p>
+        <div class="form-row">
+          <div>
+            <label>Your Name</label>
+            <input type="text" id="sug-from" value="Justin" placeholder="Your name" />
+          </div>
+          <div>
+            <label>Category</label>
+            <select id="sug-category" style="width:100%;padding:10px 12px;border-radius:10px;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.07);color:#fff;font-family:var(--font-body);font-size:14px">
+              <option value="feature">✨ Feature Idea</option>
+              <option value="design">🎨 Design / UI</option>
+              <option value="bug">🐛 Bug / Fix</option>
+              <option value="general">💬 General</option>
+            </select>
+          </div>
+          <div>
+            <label>Priority</label>
+            <select id="sug-priority" style="width:100%;padding:10px 12px;border-radius:10px;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.07);color:#fff;font-family:var(--font-body);font-size:14px">
+              <option value="medium">⚡ Medium</option>
+              <option value="high">🔴 High</option>
+              <option value="low">🟢 Low</option>
+            </select>
+          </div>
+        </div>
+        <label>Title *</label>
+        <input type="text" id="sug-title" placeholder="Quick summary of the idea" style="margin-bottom:10px" />
+        <label>Details *</label>
+        <textarea id="sug-body" rows="5" placeholder="Describe the suggestion in detail..." style="width:100%;padding:12px;border-radius:10px;border:2px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.07);color:#fff;font-family:var(--font-body);font-size:14px;resize:vertical;margin-bottom:16px"></textarea>
+        <button class="btn btn-primary" onclick="submitSuggestion()">📨 Send to Fellito</button>
+      </div>
+
+      <div class="panel-card" style="margin-top:16px">
+        <h3>📬 Inbox <span id="sug-unread-label" style="font-size:12px;color:var(--yellow);margin-left:8px"></span></h3>
+        <div id="suggestions-list" style="margin-top:16px;display:flex;flex-direction:column;gap:12px">
+          <p style="color:rgba(255,255,255,0.4)">Loading...</p>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1864,6 +1908,83 @@ function loadAll() {
   loadSocialStatus();
   loadApiKeys();
   checkOAuthReturn && checkOAuthReturn();
+  loadSuggestionsBadge();
+}
+
+// ── Suggestions ───────────────────────────────────────────────────
+const PRIORITY_LABEL = { high: '🔴 High', medium: '⚡ Medium', low: '🟢 Low' };
+const CAT_LABEL      = { feature: '✨ Feature', design: '🎨 Design', bug: '🐛 Bug', general: '💬 General' };
+
+async function loadSuggestionsBadge() {
+  try {
+    const res = await fetch('/api/admin/suggestions', { headers: { 'x-admin-password': adminPassword } });
+    const list = await res.json();
+    const unread = list.filter(s => !s.read).length;
+    const badge = document.getElementById('sug-badge');
+    if (unread > 0) { badge.textContent = unread; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+  } catch {}
+}
+
+async function loadSuggestions() {
+  const container = document.getElementById('suggestions-list');
+  const label     = document.getElementById('sug-unread-label');
+  container.innerHTML = '<p style="color:rgba(255,255,255,0.4)">Loading...</p>';
+  const res  = await fetch('/api/admin/suggestions', { headers: { 'x-admin-password': adminPassword } });
+  const list = await res.json();
+  const unread = list.filter(s => !s.read).length;
+  label.textContent = unread > 0 ? `${unread} new` : '';
+  if (!list.length) { container.innerHTML = '<p style="color:rgba(255,255,255,0.4)">No suggestions yet.</p>'; return; }
+  container.innerHTML = list.map(s => `
+    <div style="background:${s.read ? 'rgba(255,255,255,0.04)' : 'rgba(255,222,0,0.07)'};border:2px solid ${s.read ? 'rgba(255,255,255,0.09)' : 'rgba(255,222,0,0.35)'};border-radius:12px;padding:16px;position:relative">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <span style="font-size:11px;background:rgba(255,255,255,0.1);padding:3px 8px;border-radius:20px">${CAT_LABEL[s.category] || s.category}</span>
+        <span style="font-size:11px;background:rgba(255,255,255,0.1);padding:3px 8px;border-radius:20px">${PRIORITY_LABEL[s.priority] || s.priority}</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.4);margin-left:auto">${new Date(s.createdAt).toLocaleDateString()} · ${s.from}</span>
+        ${!s.read ? '<span style="font-size:10px;background:var(--yellow);color:#000;padding:2px 8px;border-radius:20px;font-weight:700">NEW</span>' : ''}
+      </div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px">${s.title}</div>
+      <div style="color:rgba(255,255,255,0.7);font-size:13px;line-height:1.6;white-space:pre-wrap">${s.body}</div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        ${!s.read ? `<button class="btn btn-primary" style="font-size:12px;padding:6px 12px" onclick="markSuggestionRead('${s._id}')">✅ Mark Read</button>` : ''}
+        <button class="btn" style="font-size:12px;padding:6px 12px;border-color:rgba(227,53,13,0.5);color:var(--red)" onclick="deleteSuggestion('${s._id}')">🗑 Delete</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function submitSuggestion() {
+  const title = document.getElementById('sug-title').value.trim();
+  const body  = document.getElementById('sug-body').value.trim();
+  if (!title || !body) { showToast('Title and details required', true); return; }
+  await fetch('/api/admin/suggestions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-password': adminPassword },
+    body: JSON.stringify({
+      from: document.getElementById('sug-from').value || 'Justin',
+      title, body,
+      category: document.getElementById('sug-category').value,
+      priority: document.getElementById('sug-priority').value,
+    })
+  });
+  document.getElementById('sug-title').value = '';
+  document.getElementById('sug-body').value  = '';
+  showToast('Suggestion sent to Fellito! 💡');
+  loadSuggestions();
+  loadSuggestionsBadge();
+}
+
+async function markSuggestionRead(id) {
+  await fetch(`/api/admin/suggestions/${id}/read`, { method: 'PATCH', headers: { 'x-admin-password': adminPassword } });
+  loadSuggestions();
+  loadSuggestionsBadge();
+}
+
+async function deleteSuggestion(id) {
+  await fetch(`/api/admin/suggestions/${id}`, { method: 'DELETE', headers: { 'x-admin-password': adminPassword } });
+  showToast('Suggestion deleted');
+  loadSuggestions();
+  loadSuggestionsBadge();
 }
 
 // ── Studio ────────────────────────────────────────────────────────

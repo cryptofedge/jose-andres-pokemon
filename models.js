@@ -107,6 +107,16 @@ const SiteConfigSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+const SuggestionSchema = new mongoose.Schema({
+  from:      { type: String, default: 'Justin' },
+  title:     { type: String, required: true },
+  body:      { type: String, required: true },
+  category:  { type: String, default: 'general' },
+  priority:  { type: String, default: 'medium' },
+  read:      { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+});
+
 // ── Trainer HQ ────────────────────────────────────────────────────────────────
 const TrainerProgressSchema = new mongoose.Schema({
   userId:       { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
@@ -152,4 +162,5 @@ module.exports = {
   PublishJob:       mongoose.model('PublishJob',       PublishJobSchema),
   TrainerProgress:  mongoose.model('TrainerProgress',  TrainerProgressSchema),
   Tip:              mongoose.model('Tip',              TipSchema),
+  Suggestion:       mongoose.model('Suggestion',       SuggestionSchema),
 };
