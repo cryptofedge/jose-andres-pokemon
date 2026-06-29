@@ -4,7 +4,7 @@ const CACHE  = 'pokemon-world-v4';
 const STATIC = [
   '/',
   '/index.html',
-  '/style.css',
+  '/style.css?v=4',
   '/script.js?v=9',
   '/i18n.js?v=9',
   '/animations.js?v=9',
